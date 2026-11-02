@@ -62,6 +62,8 @@
     "DisplayName cannot be blank": "Tên hiển thị không thể để trống",
     "DisplayName is not valid real name": "DisplayName không phải là tên thật hợp lệ",
     "Email already exists": "Email đã tồn tại",
+    "SecondaryEmail already exists": "Email phụ đã tồn tại",
+    "SecondaryEmail cannot be the same as the primary email": "Email phụ không thể giống với email chính",
     "Email cannot be empty": "Email không thể để trống",
     "Email is invalid": "Địa chỉ email không hợp lệ",
     "Empty username.": "Tên đăng nhập trống.",

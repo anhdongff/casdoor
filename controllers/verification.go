@@ -159,6 +159,20 @@ func getUserByEmail(owner string, email string) (*object.User, error) {
 	return object.GetUserByEmail(owner, lowered)
 }
 
+func getUserByEmails(owner string, email string) (*object.User, error) {
+	user, err := object.GetUserByEmails(owner, email)
+	if err != nil || user != nil {
+		return user, err
+	}
+
+	lowered := strings.ToLower(email)
+	if lowered == email {
+		return nil, nil
+	}
+
+	return object.GetUserByEmail(owner, lowered)
+}
+
 // SendVerificationCode ...
 // @Title SendVerificationCode
 // @Tag Verification API
@@ -351,7 +365,7 @@ func (c *ApiController) SendVerificationCode() {
 			return
 		}
 
-		if vform.Method == SignupVerification && object.HasUserByField(organization.Name, "email", strings.ToLower(vform.Dest)) {
+		if vform.Method == SignupVerification && object.HasUserByMultiFields(organization.Name, []string{"secondaryEmail", "email"}, strings.ToLower(vform.Dest)) {
 			c.ResponseError(c.T("check:Email already exists"))
 			return
 		}
@@ -366,7 +380,7 @@ func (c *ApiController) SendVerificationCode() {
 				vform.Dest = user.Email
 			}
 
-			user, err = getUserByEmail(organization.Name, vform.Dest)
+			user, err = getUserByEmails(organization.Name, vform.Dest)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return
@@ -391,7 +405,7 @@ func (c *ApiController) SendVerificationCode() {
 				return
 			}
 
-			user, err = getUserByEmail(organization.Name, vform.Dest)
+			user, err = getUserByEmails(organization.Name, vform.Dest)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return
@@ -524,6 +538,30 @@ func (c *ApiController) SendVerificationCode() {
 		} else {
 			sendResp = object.SendVerificationCodeToPhone(organization, user, provider, clientIp, phone, application, c.GetAcceptLanguage())
 		}
+	case object.VerifyTypeSecondaryEmail:
+		if vform.Method == ResetVerification {
+			user = c.getCurrentUser()
+		}
+
+		provider, err = application.GetEmailProvider(vform.Method)
+		if err != nil {
+			c.ResponseError(err.Error())
+			return
+		}
+		if provider == nil {
+			c.ResponseError(fmt.Sprintf(c.T("verification:please add an Email provider to the \"Providers\" list for the application: %s"), application.Name))
+			return
+		}
+
+		// let a "Custom HTTP Email" webhook localize the email, a signup code is sent before the user exists
+		if provider.HttpHeaders == nil {
+			provider.HttpHeaders = map[string]string{}
+		}
+		if _, ok := provider.HttpHeaders["Accept-Language"]; !ok {
+			provider.HttpHeaders["Accept-Language"] = c.GetAcceptLanguage()
+		}
+
+		sendResp = object.SendVerificationCodeToEmail(organization, user, provider, clientIp, vform.Dest, vform.Method, c.Ctx.Request.Host, application.Name, application, c.GetAcceptLanguage())
 	}
 
 	if sendResp != nil {
@@ -644,12 +682,28 @@ func (c *ApiController) ResetEmailOrPhone() {
 			return
 		}
 	} else if destType == object.VerifyTypeEmail {
-		if object.HasUserByField(user.Owner, "email", dest) {
+		if object.HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, dest) {
 			c.ResponseError(c.T("check:Email already exists"))
 			return
 		}
 
 		emailItem := object.GetAccountItemByName("Email", organization)
+		if emailItem == nil {
+			c.ResponseError(c.T("verification:Unable to get the email modify rule."))
+			return
+		}
+
+		if pass, errMsg := object.CheckAccountItemModifyRule(emailItem, user.IsAdminUser(), c.GetAcceptLanguage()); !pass {
+			c.ResponseError(errMsg)
+			return
+		}
+	} else if destType == object.VerifyTypeSecondaryEmail {
+		if object.HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, dest) {
+			c.ResponseError(c.T("check:Email already exists"))
+			return
+		}
+
+		emailItem := object.GetAccountItemByName("Secondary Email", organization)
 		if emailItem == nil {
 			c.ResponseError(c.T("verification:Unable to get the email modify rule."))
 			return
@@ -677,6 +731,12 @@ func (c *ApiController) ResetEmailOrPhone() {
 			user.Name = user.Email
 			columns = append(columns, "name")
 		}
+		_, err = object.UpdateUser(id, user, columns, false)
+	case object.VerifyTypeSecondaryEmail:
+		id := user.GetId()
+		user.SecondaryEmail = dest
+		user.SecondaryEmailVerified = true
+		columns := []string{"secondary_email", "secondary_email_verified"}
 		_, err = object.UpdateUser(id, user, columns, false)
 	case object.VerifyTypePhone:
 		user.Phone = dest

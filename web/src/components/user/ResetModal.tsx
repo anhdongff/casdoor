@@ -10,7 +10,7 @@ import * as Setting from "@/lib/setting";
 
 interface ResetModalProps {
   application: any;
-  destType: "email" | "phone";
+  destType: "email" | "phone" | "secondary_email";
   buttonText: string;
   countryCode?: string;
   disabled?: boolean;
@@ -94,7 +94,7 @@ export function ResetModal({application, destType, buttonText, countryCode = "",
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>{destType === "email" ? i18next.t("user:New Email") : i18next.t("user:New phone")}</Label>
+              <Label>{destType === "email" ? i18next.t("user:New Email") : destType === "secondary_email" ? i18next.t("user:New Secondary Email") : i18next.t("user:New phone")}</Label>
               <div className="flex items-center gap-2">
                 {destType === "phone" && countryCode !== "" ? (
                   <span className="shrink-0 text-sm text-muted-foreground">+{Setting.getCountryCode(countryCode)}</span>

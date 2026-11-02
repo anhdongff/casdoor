@@ -657,7 +657,7 @@ func checkMfaEnable(c *ApiController, user *object.User, organization *object.Or
 
 func getExistUserByBindingRule(providerItem *object.ProviderItem, application *object.Application, userInfo *idp.UserInfo) (user *object.User, err error) {
 	if providerItem.BindingRule == nil {
-		providerItem.BindingRule = &[]string{"Email", "Phone"}
+		providerItem.BindingRule = &[]string{"Email", "SecondaryEmail", "Phone"}
 	}
 	if len(*providerItem.BindingRule) == 0 {
 		return nil, nil
@@ -668,6 +668,16 @@ func getExistUserByBindingRule(providerItem *object.ProviderItem, application *o
 		// account with someone else's unverified email must not take over their account
 		if rule == "Email" && userInfo.EmailVerified {
 			user, err = object.GetUserByField(application.Organization, "email", userInfo.Email)
+			if err != nil {
+				return nil, err
+			}
+			if user != nil && isEmailBindable(user) {
+				return user, nil
+			}
+		}
+
+		if rule == "SecondaryEmail" && userInfo.EmailVerified {
+			user, err = object.GetUserByField(application.Organization, "secondary_email", userInfo.Email)
 			if err != nil {
 				return nil, err
 			}
@@ -1093,6 +1103,7 @@ func (c *ApiController) Login() {
 			return
 		}
 		userInfo := &idp.UserInfo{}
+		bindingRule := providerItem.BindingRule
 		var token *oauth2.Token
 		if provider.Category == "SAML" {
 			// SAML
@@ -1204,7 +1215,7 @@ func (c *ApiController) Login() {
 			if user != nil && !user.IsDeleted {
 				// Sign in via OAuth (want to sign up but already have account)
 				// sync info from 3rd-party if possible
-				_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, provider.UserMapping)
+				_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, bindingRule, provider.UserMapping)
 				if err != nil {
 					c.ResponseError(err.Error())
 					return
@@ -1253,7 +1264,7 @@ func (c *ApiController) Login() {
 					// the binding rule of the provider decides whether they are the same person
 					if userInfo.Email != "" {
 						var emailUser *object.User
-						emailUser, err = object.GetUserByField(application.Organization, "email", userInfo.Email)
+						emailUser, err = object.GetUserByMultiFields(application.Organization, []string{"secondaryEmail", "email"}, userInfo.Email)
 						if err != nil {
 							c.ResponseError(err.Error())
 							return
@@ -1380,7 +1391,7 @@ func (c *ApiController) Login() {
 				}
 
 				// sync info from 3rd-party if possible
-				_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, provider.UserMapping)
+				_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, bindingRule, provider.UserMapping)
 				if err != nil {
 					c.ResponseError(err.Error())
 					return
@@ -1443,7 +1454,7 @@ func (c *ApiController) Login() {
 			}
 
 			// sync info from 3rd-party if possible
-			_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, provider.UserMapping)
+			_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, bindingRule, provider.UserMapping)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return

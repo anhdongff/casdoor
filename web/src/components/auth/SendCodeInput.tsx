@@ -19,8 +19,8 @@ interface SendCodeInputProps {
   onChange: (value: string) => void;
   /** why the code is sent: "login" | "signup" | "forget" | "mfaSetup" | "mfaAuth" */
   method: string;
-  /** where it is sent: "email" | "phone" */
-  destType: "email" | "phone";
+  /** where it is sent: "email" | "phone" | "secondary_email" */
+  destType: "email" | "phone" | "secondary_email";
   /** the email address or phone number itself */
   dest: string;
   countryCode?: string;
@@ -43,7 +43,8 @@ interface SendCodeInputProps {
 
 interface UseSendCodeOptions {
   method: string;
-  destType: "email" | "phone";
+  /** where it is sent: "email" | "phone" | "secondary_email" */
+  destType: "email" | "phone" | "secondary_email";
   dest: string;
   countryCode?: string;
   applicationId: string;

@@ -49,6 +49,7 @@ export function newOrganization(createdTime: string) {
       {name: "User type", visible: true, viewRule: "Public", modifyRule: "Admin"},
       {name: "Password", visible: true, viewRule: "Self", modifyRule: "Self"},
       {name: "Email", visible: true, viewRule: "Public", modifyRule: "Self"},
+      {name: "Secondary Email", visible: true, viewRule: "Public", modifyRule: "Self"},
       {name: "Phone", visible: true, viewRule: "Public", modifyRule: "Self"},
       {name: "Country code", visible: true, viewRule: "Public", modifyRule: "Self"},
       {name: "Country/Region", visible: true, viewRule: "Public", modifyRule: "Self"},

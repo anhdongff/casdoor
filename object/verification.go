@@ -57,8 +57,10 @@ const (
 )
 
 const (
-	VerifyTypePhone = "phone"
-	VerifyTypeEmail = "email"
+	VerifyTypePhone                 = "phone"
+	VerifyTypeEmail                 = "email"
+	VerifyTypeSecondaryEmail        = "secondary_email"
+	VerifyTypeEmailOrSecondaryEmail = "email_or_secondary_email"
 )
 
 func init() {
@@ -528,7 +530,7 @@ func CheckFaceId(user *User, faceId []float64, lang string) error {
 // user's own: the user is looked up by name first, so it may not be the owner of the typed address
 func IsUserVerifyDest(user *User, dest string, countryCode string) bool {
 	if strings.Contains(dest, "@") {
-		return user.Email != "" && strings.EqualFold(user.Email, dest)
+		return (user.Email != "" && strings.EqualFold(user.Email, dest)) || (user.SecondaryEmail != "" && strings.EqualFold(user.SecondaryEmail, dest))
 	}
 
 	if user.CountryCode != "" {
