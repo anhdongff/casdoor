@@ -678,7 +678,7 @@ func (c *ApiController) SsoLogout() {
 	}
 
 	if userObj != nil {
-		err = object.SendSsoLogoutNotifications(userObj, sessionIds, tokens)
+		err = object.SendSsoLogoutNotificationsToAllAllowedApplications(userObj, sessionIds, tokens)
 		if err != nil {
 			c.ResponseError(err.Error())
 			return

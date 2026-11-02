@@ -739,6 +739,7 @@ export const GetTranslatedUserItems = () => {
     {name: "User type", label: i18next.t("general:User type")},
     {name: "Password", label: i18next.t("general:Password")},
     {name: "Email", label: i18next.t("general:Email")},
+    {name: "Secondary Email", label: i18next.t("general:Secondary Email")},
     {name: "Phone", label: i18next.t("general:Phone")},
     {name: "Country code", label: i18next.t("user:Country code")},
     {name: "Country/Region", label: i18next.t("user:Country/Region")},

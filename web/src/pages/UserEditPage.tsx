@@ -1,47 +1,47 @@
 import * as React from "react";
 import i18next from "i18next";
-import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
-import {ShieldCheck, Users} from "lucide-react";
-import {UnauthorizedPage} from "@/components/common/UnauthorizedPage";
-import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Switch} from "@/components/ui/switch";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
-import {CountryCodeSelect} from "@/components/common/CountryCodeSelect";
-import {ConfirmButton} from "@/components/common/ConfirmButton";
-import {Loading} from "@/components/common/Loading";
-import {MultiSelect} from "@/components/common/MultiSelect";
-import {RegionSelect} from "@/components/common/RegionSelect";
-import {SearchableSelect} from "@/components/common/SearchableSelect";
-import {EditPageShell} from "@/components/crud/EditPageShell";
-import {EditableTable} from "@/components/crud/EditableTable";
-import {MapTable} from "@/components/crud/MapTable";
-import {formGridClass} from "@/components/crud/FormRow";
-import {AffiliationAddressSelect, AffiliationField, useAffiliation} from "@/components/user/AffiliationSelect";
-import {CartTable} from "@/components/user/CartTable";
-import {CasdoorAppQrCode, CasdoorAppUrl, CasdoorAuthenticatorLink} from "@/components/user/CasdoorAppConnector";
-import {ConsentTable} from "@/components/user/ConsentTable";
-import {FaceIdTable} from "@/components/user/FaceIdTable";
-import {CropperDivModal, UserImageField} from "@/components/user/CropperDivModal";
-import {ThirdPartyLogins} from "@/components/user/OAuthWidget";
-import {AccountItemRow, AccountItemsProvider} from "@/components/user/AccountItemRow";
-import {EnableMfaButton} from "@/components/user/EnableMfaButton";
-import {TotpMfaType} from "@/components/auth/mfa/constants";
-import {MfaItemsTable} from "@/components/auth/mfa/MfaItemsTable";
-import {isAccountItemVisible} from "@/lib/account-items";
-import {PasswordModal} from "@/components/user/PasswordModal";
-import {ResetModal} from "@/components/user/ResetModal";
-import {TransactionTable} from "@/components/user/TransactionTable";
-import {WebauthnCredentialTable} from "@/components/user/WebauthnCredentialTable";
-import {useAccount} from "@/hooks/use-account";
-import {useEditRecord} from "@/hooks/use-edit-record";
-import {dropExtraPhysicalGroups, useApplicationOptions, useGroupList, useGroupOptions, useOrganizationOptions} from "@/hooks/use-options";
-import {getModeTitleKey, submitEdit} from "@/lib/crud";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { ShieldCheck, Users } from "lucide-react";
+import { UnauthorizedPage } from "@/components/common/UnauthorizedPage";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { CountryCodeSelect } from "@/components/common/CountryCodeSelect";
+import { ConfirmButton } from "@/components/common/ConfirmButton";
+import { Loading } from "@/components/common/Loading";
+import { MultiSelect } from "@/components/common/MultiSelect";
+import { RegionSelect } from "@/components/common/RegionSelect";
+import { SearchableSelect } from "@/components/common/SearchableSelect";
+import { EditPageShell } from "@/components/crud/EditPageShell";
+import { EditableTable } from "@/components/crud/EditableTable";
+import { MapTable } from "@/components/crud/MapTable";
+import { formGridClass } from "@/components/crud/FormRow";
+import { AffiliationAddressSelect, AffiliationField, useAffiliation } from "@/components/user/AffiliationSelect";
+import { CartTable } from "@/components/user/CartTable";
+import { CasdoorAppQrCode, CasdoorAppUrl, CasdoorAuthenticatorLink } from "@/components/user/CasdoorAppConnector";
+import { ConsentTable } from "@/components/user/ConsentTable";
+import { FaceIdTable } from "@/components/user/FaceIdTable";
+import { CropperDivModal, UserImageField } from "@/components/user/CropperDivModal";
+import { ThirdPartyLogins } from "@/components/user/OAuthWidget";
+import { AccountItemRow, AccountItemsProvider } from "@/components/user/AccountItemRow";
+import { EnableMfaButton } from "@/components/user/EnableMfaButton";
+import { TotpMfaType } from "@/components/auth/mfa/constants";
+import { MfaItemsTable } from "@/components/auth/mfa/MfaItemsTable";
+import { isAccountItemVisible } from "@/lib/account-items";
+import { PasswordModal } from "@/components/user/PasswordModal";
+import { ResetModal } from "@/components/user/ResetModal";
+import { TransactionTable } from "@/components/user/TransactionTable";
+import { WebauthnCredentialTable } from "@/components/user/WebauthnCredentialTable";
+import { useAccount } from "@/hooks/use-account";
+import { useEditRecord } from "@/hooks/use-edit-record";
+import { dropExtraPhysicalGroups, useApplicationOptions, useGroupList, useGroupOptions, useOrganizationOptions } from "@/hooks/use-options";
+import { getModeTitleKey, submitEdit } from "@/lib/crud";
 import * as ApplicationBackend from "@/backend/ApplicationBackend";
 import * as OrganizationBackend from "@/backend/OrganizationBackend";
 import * as MfaBackend from "@/backend/MfaBackend";
@@ -55,22 +55,22 @@ const DEFAULT_TAB = "__default__";
 const GENDERS = ["Male", "Female", "Other"];
 /** the three ID card pictures, stored as user properties and uploaded under the same tag */
 const ID_CARD_IMAGES = [
-  {field: "idCardFront", uploadKey: "user:Upload ID card front picture", setKey: "user:ID card front"},
-  {field: "idCardBack", uploadKey: "user:Upload ID card back picture", setKey: "user:ID card back"},
-  {field: "idCardWithPerson", uploadKey: "user:Upload ID card with person picture", setKey: "user:ID card with person"},
+  { field: "idCardFront", uploadKey: "user:Upload ID card front picture", setKey: "user:ID card front" },
+  { field: "idCardBack", uploadKey: "user:Upload ID card back picture", setKey: "user:ID card back" },
+  { field: "idCardWithPerson", uploadKey: "user:Upload ID card with person picture", setKey: "user:ID card with person" },
 ];
 const ID_CARD_TYPES = ["ID card", "Passport", "Driver license"];
 /** the rows of `user.addresses` are object.Address: tag/line1/line2/city/state/zipCode/region */
 const ADDRESS_TAGS = [
-  {value: "Home", labelKey: "general:Home"},
-  {value: "Work", labelKey: "user:Work"},
-  {value: "Other", labelKey: "user:Other"},
+  { value: "Home", labelKey: "general:Home" },
+  { value: "Work", labelKey: "user:Work" },
+  { value: "Other", labelKey: "user:Other" },
 ];
 
-export default function UserEditPage({self}: {self?: boolean} = {}) {
+export default function UserEditPage({ self }: { self?: boolean } = {}) {
   const params = useParams();
   const navigate = useNavigate();
-  const {account, accessToken, reload: reloadAccount} = useAccount();
+  const { account, accessToken, reload: reloadAccount } = useAccount();
   const returnUrl = new URLSearchParams(useLocation().search).get("returnUrl") ?? "";
   // "/account" edits the signed-in user, every other route takes the name from the URL
   const organizationName = self ? account?.owner ?? "" : params.organizationName ?? "";
@@ -94,7 +94,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
   const groups = useGroupOptions(organizationName);
   const groupList = useGroupList(organizationName);
 
-  const {record: user, updateField, updateFields, loading, denied, mode, setMode, reload} = useEditRecord<any>({
+  const { record: user, updateField, updateFields, loading, denied, mode, setMode, reload } = useEditRecord<any>({
     fetch: () => UserBackend.getUser(organizationName, userName),
     deps: [organizationName, userName],
   });
@@ -158,7 +158,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
     (item: any) => item.enabled || allowedMfaTypes.length === 0 || allowedMfaTypes.includes(item.mfaType),
   );
 
-  const save = async(exitAfterSave: boolean) => {
+  const save = async (exitAfterSave: boolean) => {
     const isAdd = mode === "add";
     setSaving(true);
     await submitEdit({
@@ -183,7 +183,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
             navigate("/users");
           }
         } else if (user.name !== userName) {
-          navigate(`/users/${user.owner}/${user.name}`, {replace: true});
+          navigate(`/users/${user.owner}/${user.name}`, { replace: true });
         } else if (isAdd) {
           // the user exists now: its ID is generated by the server, and its avatar,
           // MFA and consents can be loaded
@@ -194,7 +194,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         // a rejected rename would otherwise leave the form pointing at a user that
         // does not exist, and the next save would hit the wrong URL
         if (!isAdd) {
-          updateFields({owner: organizationName, name: userName});
+          updateFields({ owner: organizationName, name: userName });
         }
       },
     });
@@ -202,7 +202,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
   };
 
   const setPreferredMfa = (mfaType: string) => {
-    MfaBackend.SetPreferredMfa({owner: user.owner, name: user.name, mfaType}).then((res: any) => {
+    MfaBackend.SetPreferredMfa({ owner: user.owner, name: user.name, mfaType }).then((res: any) => {
       if (res.status === "ok") {
         setMfaItems(res.data ?? []);
       } else {
@@ -213,7 +213,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
 
   const deleteMfa = () => {
     setRemovingMfa(true);
-    return MfaBackend.DeleteMfa({owner: user.owner, name: user.name})
+    return MfaBackend.DeleteMfa({ owner: user.owner, name: user.name })
       .then((res: any) => {
         if (res.status === "ok") {
           Setting.showMessage("success", i18next.t("general:Successfully deleted"));
@@ -300,7 +300,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         <div className="flex items-center gap-3">
           <Avatar className="h-16 w-16">
             {avatarUrl ? <AvatarImage src={avatarUrl} alt={user.name} /> : null}
-            <AvatarFallback style={{backgroundColor: Setting.getAvatarColor(user.name ?? "?"), color: "#fff"}}>
+            <AvatarFallback style={{ backgroundColor: Setting.getAvatarColor(user.name ?? "?"), color: "#fff" }}>
               {(user.name || "?").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -327,6 +327,17 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
           {/* the backend resolves the current user itself, so only the user can reset their own */}
           {isSelf ? (
             <ResetModal application={application} destType="email" buttonText={i18next.t("user:Reset Email...")} />
+          ) : null}
+        </div>
+      </AccountItemRow>
+    ),
+    "Secondary Email": (
+      <AccountItemRow name="Secondary Email" labelKey="general:Secondary Email">
+        <div className="flex gap-2">
+          <Input type="email" value={user.secondaryEmail ?? ""} disabled={!isAdmin} onChange={(e) => updateField("secondaryEmail", e.target.value)} />
+          {/* the backend resolves the current user itself, so only the user can reset their own */}
+          {isSelf ? (
+            <ResetModal application={application} destType="secondary_email" buttonText={i18next.t("user:Reset Secondary Email...")} />
           ) : null}
         </div>
       </AccountItemRow>
@@ -361,7 +372,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
           options={(userOrganization.userTypes?.length > 0
             ? userOrganization.userTypes
             : ["normal-user", "paid-user"]
-          ).map((item: string) => ({value: item, label: item}))}
+          ).map((item: string) => ({ value: item, label: item }))}
         />
       </AccountItemRow>
     ),
@@ -375,7 +386,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
             onChange={(v) => updateField("tag", v)}
             options={(userOrganization.tags as string[]).map((tag) => {
               const tokens = tag.split("|");
-              return {value: tokens[0], label: Setting.getLanguage() !== "zh" ? tokens[0] : tokens[1]};
+              return { value: tokens[0], label: Setting.getLanguage() !== "zh" ? tokens[0] : tokens[1] };
             })}
           />
         ) : (
@@ -427,12 +438,12 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
             options={affiliation.addressOptions}
             onChange={(value) => {
               // a new address invalidates the affiliation picked under the old one
-              updateFields({address: value, affiliation: "", score: 0});
+              updateFields({ address: value, affiliation: "", score: 0 });
               affiliation.loadAffiliationOptions(value);
             }}
           />
         ) : (
-        // antd edits the two lines of `address` as their own inputs
+          // antd edits the two lines of `address` as their own inputs
           <div className="space-y-2">
             {[0, 1].map((line) => (
               <div key={line} className="flex items-center gap-2">
@@ -458,7 +469,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         <EditableTable
           rows={user.addresses ?? []}
           onChange={(rows) => updateField("addresses", rows)}
-          newRow={() => ({tag: "", line1: "", line2: "", city: "", state: "", zipCode: "", region: ""})}
+          newRow={() => ({ tag: "", line1: "", line2: "", city: "", state: "", zipCode: "", region: "" })}
           columns={[
             {
               key: "tag",
@@ -467,8 +478,8 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               render: (row: any, _i, patch) => (
                 <SearchableSelect
                   value={row.tag ?? ""}
-                  onChange={(v) => patch({tag: v})}
-                  options={ADDRESS_TAGS.map((item) => ({value: item.value, label: i18next.t(item.labelKey)}))}
+                  onChange={(v) => patch({ tag: v })}
+                  options={ADDRESS_TAGS.map((item) => ({ value: item.value, label: i18next.t(item.labelKey) }))}
                 />
               ),
             },
@@ -477,7 +488,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("user:Line 1"),
               width: 160,
               render: (row: any, _i, patch) => (
-                <Input value={row.line1 ?? ""} onChange={(e) => patch({line1: e.target.value})} />
+                <Input value={row.line1 ?? ""} onChange={(e) => patch({ line1: e.target.value })} />
               ),
             },
             {
@@ -485,7 +496,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("user:Line 2"),
               width: 160,
               render: (row: any, _i, patch) => (
-                <Input value={row.line2 ?? ""} onChange={(e) => patch({line2: e.target.value})} />
+                <Input value={row.line2 ?? ""} onChange={(e) => patch({ line2: e.target.value })} />
               ),
             },
             {
@@ -493,7 +504,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("user:City"),
               width: 130,
               render: (row: any, _i, patch) => (
-                <Input value={row.city ?? ""} onChange={(e) => patch({city: e.target.value})} />
+                <Input value={row.city ?? ""} onChange={(e) => patch({ city: e.target.value })} />
               ),
             },
             {
@@ -501,7 +512,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("general:State"),
               width: 120,
               render: (row: any, _i, patch) => (
-                <Input value={row.state ?? ""} onChange={(e) => patch({state: e.target.value})} />
+                <Input value={row.state ?? ""} onChange={(e) => patch({ state: e.target.value })} />
               ),
             },
             {
@@ -509,7 +520,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("user:Zip code"),
               width: 120,
               render: (row: any, _i, patch) => (
-                <Input value={row.zipCode ?? ""} onChange={(e) => patch({zipCode: e.target.value})} />
+                <Input value={row.zipCode ?? ""} onChange={(e) => patch({ zipCode: e.target.value })} />
               ),
             },
             {
@@ -517,7 +528,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("provider:Region"),
               width: 170,
               render: (row: any, _i, patch) => (
-                <RegionSelect value={row.region ?? ""} onChange={(v) => patch({region: v})} />
+                <RegionSelect value={row.region ?? ""} onChange={(v) => patch({ region: v })} />
               ),
             },
           ]}
@@ -531,7 +542,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
           value={user.affiliation}
           options={affiliation.affiliationOptions}
           onChange={(name, score) =>
-            score === undefined ? updateField("affiliation", name) : updateFields({affiliation: name, score})
+            score === undefined ? updateField("affiliation", name) : updateFields({ affiliation: name, score })
           }
         />
       </AccountItemRow>
@@ -556,7 +567,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         <SearchableSelect
           value={user.gender ?? ""}
           onChange={(v) => updateField("gender", v)}
-          options={GENDERS.map((item) => ({value: item, label: item}))}
+          options={GENDERS.map((item) => ({ value: item, label: item }))}
         />
       </AccountItemRow>
     ),
@@ -575,7 +586,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         <SearchableSelect
           value={user.idCardType ?? ""}
           onChange={(v) => updateField("idCardType", v)}
-          options={ID_CARD_TYPES.map((item) => ({value: item, label: item}))}
+          options={ID_CARD_TYPES.map((item) => ({ value: item, label: item }))}
         />
       </AccountItemRow>
     ),
@@ -821,7 +832,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
         <EditableTable
           rows={user.managedAccounts ?? []}
           onChange={(rows) => updateField("managedAccounts", rows)}
-          newRow={() => ({application: "", username: "", password: "", signinUrl: ""})}
+          newRow={() => ({ application: "", username: "", password: "", signinUrl: "" })}
           reorderable={false}
           columns={[
             {
@@ -831,7 +842,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               render: (row: any, _i, patch) => (
                 <SearchableSelect
                   value={row.application}
-                  onChange={(v) => patch({application: v})}
+                  onChange={(v) => patch({ application: v })}
                   options={applications}
                 />
               ),
@@ -841,7 +852,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               title: i18next.t("signup:Username"),
               width: 180,
               render: (row: any, _i, patch) => (
-                <Input value={row.username ?? ""} onChange={(e) => patch({username: e.target.value})} />
+                <Input value={row.username ?? ""} onChange={(e) => patch({ username: e.target.value })} />
               ),
             },
             {
@@ -852,7 +863,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
                 <Input
                   type="password"
                   value={row.password ?? ""}
-                  onChange={(e) => patch({password: e.target.value})}
+                  onChange={(e) => patch({ password: e.target.value })}
                 />
               ),
             },
@@ -860,7 +871,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
               key: "signinUrl",
               title: i18next.t("general:Signin URL"),
               render: (row: any, _i, patch) => (
-                <Input value={row.signinUrl ?? ""} onChange={(e) => patch({signinUrl: e.target.value})} />
+                <Input value={row.signinUrl ?? ""} onChange={(e) => patch({ signinUrl: e.target.value })} />
               ),
             },
           ]}
@@ -896,14 +907,14 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
           <EditableTable
             rows={user.mfaAccounts ?? []}
             onChange={(rows) => updateField("mfaAccounts", rows)}
-            newRow={() => ({accountName: "", issuer: "", secretKey: "", origin: ""})}
+            newRow={() => ({ accountName: "", issuer: "", secretKey: "", origin: "" })}
             columns={[
               {
                 key: "accountName",
                 title: i18next.t("cert:Account"),
                 width: 180,
                 render: (row: any, _i, patch) => (
-                  <Input value={row.accountName ?? ""} onChange={(e) => patch({accountName: e.target.value})} />
+                  <Input value={row.accountName ?? ""} onChange={(e) => patch({ accountName: e.target.value })} />
                 ),
               },
               {
@@ -911,7 +922,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
                 title: "Issuer",
                 width: 180,
                 render: (row: any, _i, patch) => (
-                  <Input value={row.issuer ?? ""} onChange={(e) => patch({issuer: e.target.value})} />
+                  <Input value={row.issuer ?? ""} onChange={(e) => patch({ issuer: e.target.value })} />
                 ),
               },
               {
@@ -919,7 +930,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
                 title: i18next.t("general:URL"),
                 width: 180,
                 render: (row: any, _i, patch) => (
-                  <Input value={row.origin ?? ""} onChange={(e) => patch({origin: e.target.value})} />
+                  <Input value={row.origin ?? ""} onChange={(e) => patch({ origin: e.target.value })} />
                 ),
               },
               {
@@ -929,7 +940,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
                   <Input
                     type="password"
                     value={row.secretKey ?? ""}
-                    onChange={(e) => patch({secretKey: e.target.value})}
+                    onChange={(e) => patch({ secretKey: e.target.value })}
                   />
                 ),
               },
@@ -1161,7 +1172,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
   // under which tab, exactly as getUniqueTabs()/getAccountItemsByTab() do in
   // web/src/UserEditPage.js.
   const visibleAccountItems = ((userOrganization?.accountItems ?? []) as any[]).filter((item) =>
-    isAccountItemVisible(item, {isAdmin, isSelfOrAdmin, user}),
+    isAccountItemVisible(item, { isAdmin, isSelfOrAdmin, user }),
   );
   const tabNames = Array.from(new Set(visibleAccountItems.map((item: any) => item.tab || ""))).sort((a, b) => {
     // the unnamed tab always comes first
@@ -1242,7 +1253,7 @@ export default function UserEditPage({self}: {self?: boolean} = {}) {
 }
 
 /** the well-known logo of an MFA issuer, falling back to a generic one */
-function IssuerLogo({issuer}: {issuer?: string}) {
+function IssuerLogo({ issuer }: { issuer?: string }) {
   const src = issuer
     ? `${Setting.StaticBaseUrl}/img/social_${issuer.toLowerCase()}.png`
     : `${Setting.StaticBaseUrl}/img/social_default.png`;

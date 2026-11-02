@@ -140,6 +140,7 @@ export const PROVIDER_BINDING_RULES: EnumMap = {
   "Email": {i18nKey: "general:Email"},
   "Name": {i18nKey: "general:Name"},
   "Phone": {i18nKey: "general:Phone"},
+  "SecondaryEmail": {i18nKey: "general:Secondary Email"},
 };
 
 export const LDAP_PASSWORD_TYPES: EnumMap = {

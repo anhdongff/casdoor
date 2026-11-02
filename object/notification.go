@@ -17,6 +17,7 @@ package object
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -58,12 +59,13 @@ func SendNotification(provider *Provider, content string, recipient string) erro
 // This includes session information and a signature for authentication
 type SsoLogoutNotification struct {
 	// User information
-	Owner       string `json:"owner"`
-	Name        string `json:"name"`
-	DisplayName string `json:"displayName"`
-	Email       string `json:"email"`
-	Phone       string `json:"phone"`
-	Id          string `json:"id"`
+	Owner          string `json:"owner"`
+	Name           string `json:"name"`
+	DisplayName    string `json:"displayName"`
+	Email          string `json:"email"`
+	SecondaryEmail string `json:"secondaryEmail"`
+	Phone          string `json:"phone"`
+	Id             string `json:"id"`
 
 	// Event type
 	Event string `json:"event"`
@@ -151,6 +153,7 @@ func SendSsoLogoutNotifications(user *User, sessionIds []string, tokens []*Token
 		Name:              user.Name,
 		DisplayName:       user.DisplayName,
 		Email:             user.Email,
+		SecondaryEmail:    user.SecondaryEmail,
 		Phone:             user.Phone,
 		Id:                user.Id,
 		Event:             "sso-logout",
@@ -186,6 +189,95 @@ func SendSsoLogoutNotifications(user *User, sessionIds []string, tokens []*Token
 	}
 
 	return nil
+}
+
+func SendSsoLogoutNotificationsToAllAllowedApplications(user *User, sessionIds []string, tokens []*Token) error {
+	if user == nil {
+		return nil
+	}
+
+	// Get the user's signup application
+	applications, err := GetOrganizationApplications("", user.Owner)
+	if err != nil {
+		return fmt.Errorf("failed to get applications for organization %s: %w", user.Owner, err)
+	}
+
+	applications, err = GetAllowedApplications(applications, user.Owner+"/"+user.Name, "")
+	if err != nil {
+		return fmt.Errorf("failed to get allowed applications for user %s: %w", user.Owner+"/"+user.Name, err)
+	}
+
+	// Extract access token hashes from tokens
+	accessTokenHashes := make([]string, 0, len(tokens))
+	for _, token := range tokens {
+		if token.AccessTokenHash != "" {
+			accessTokenHashes = append(accessTokenHashes, token.AccessTokenHash)
+		}
+	}
+
+	// Generate nonce and timestamp for replay protection
+	nonce := util.GenerateId()
+	timestamp := time.Now().Unix()
+
+	var sendErr error
+	for _, application := range applications {
+		if application == nil {
+			continue
+		}
+
+		signature := generateLogoutSignature(
+			application.ClientSecret,
+			user.Owner,
+			user.Name,
+			nonce,
+			timestamp,
+			sessionIds,
+			accessTokenHashes,
+		)
+
+		notificationObj := SsoLogoutNotification{
+			Owner:             user.Owner,
+			Name:              user.Name,
+			DisplayName:       user.DisplayName,
+			Email:             user.Email,
+			SecondaryEmail:    user.SecondaryEmail,
+			Phone:             user.Phone,
+			Id:                user.Id,
+			Event:             "sso-logout",
+			SessionIds:        sessionIds,
+			AccessTokenHashes: accessTokenHashes,
+			Nonce:             nonce,
+			Timestamp:         timestamp,
+			Signature:         signature,
+		}
+
+		notificationData, err := json.Marshal(notificationObj)
+		if err != nil {
+			return fmt.Errorf("failed to marshal user data for application %s/%s: %w", application.Owner, application.Name, err)
+		}
+		content := string(notificationData)
+
+		for _, providerItem := range application.Providers {
+			if providerItem == nil || (!strings.Contains(providerItem.Name, "sso_logout") && !strings.Contains(providerItem.Name, "sso-logout")) {
+				continue
+			}
+
+			provider := providerItem.Provider
+			if provider == nil {
+				provider, err = GetProvider("admin/" + providerItem.Name)
+			}
+
+			if provider.Category != "Notification" {
+				continue
+			}
+
+			if err := SendNotification(provider, content, ""); err != nil {
+				sendErr = errors.Join(sendErr, fmt.Errorf("failed to send SSO logout notification to provider %s/%s: %w", provider.Owner, provider.Name, err))
+			}
+		}
+	}
+
+	return sendErr
 }
 
 // VerifySsoLogoutSignature verifies the signature of an SSO logout notification

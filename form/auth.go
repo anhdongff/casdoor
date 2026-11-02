@@ -31,6 +31,7 @@ type AuthForm struct {
 	Tag            string `json:"tag"`
 	Education      string `json:"education"`
 	Email          string `json:"email"`
+	SecondaryEmail string `json:"secondaryEmail"`
 	Phone          string `json:"phone"`
 	Affiliation    string `json:"affiliation"`
 	IdCard         string `json:"idCard"`

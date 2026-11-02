@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 
+	"slices"
+
 	"github.com/casdoor/casdoor/conf"
 	"github.com/casdoor/casdoor/i18n"
 	"github.com/casdoor/casdoor/idp"
@@ -85,6 +87,103 @@ func HasUserByField(organizationName string, field string, value string) bool {
 	return user != nil
 }
 
+// GetUserByMultiFields searches for a user in an organization where any of the specified fields matches the value (using OR condition).
+func GetUserByMultiFields(organizationName string, fields []string, value string) (*User, error) {
+	if len(fields) == 0 || value == "" {
+		return nil, nil
+	}
+
+	var conditions []string
+	var params []interface{}
+
+	for _, field := range fields {
+		field = strings.TrimSpace(field)
+		if field == "" {
+			continue
+		}
+
+		if !util.FilterSQLIdentifier(field) {
+			return nil, nil
+		}
+
+		// Convert camelCase (e.g. "secondaryEmail") to snake_case ("secondary_email") for database columns
+		columnName := util.CamelToSnakeCase(field)
+		conditions = append(conditions, fmt.Sprintf("%s = ?", strings.ToLower(columnName)))
+		params = append(params, value)
+	}
+
+	if len(conditions) == 0 {
+		return nil, nil
+	}
+
+	// Group OR conditions with parentheses: (field1 = ? OR field2 = ?)
+	whereClause := fmt.Sprintf("(%s)", strings.Join(conditions, " OR "))
+
+	user := User{Owner: organizationName}
+	existed, err := ormer.Engine.Where(whereClause, params...).Get(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	if existed {
+		return &user, nil
+	} else {
+		return nil, nil
+	}
+}
+
+// HasUserByMultiFields checks if any user exists matching value on any of the specified fields.
+func HasUserByMultiFields(organizationName string, fields []string, value string) bool {
+	user, err := GetUserByMultiFields(organizationName, fields, value)
+	if err != nil {
+		panic(err)
+	}
+	return user != nil
+}
+
+// GetUserByMultiFieldsIgnoreCase looks up a user matching value case-insensitively across multiple fields.
+func GetUserByMultiFieldsIgnoreCase(organizationName string, fields []string, value string) (*User, error) {
+	if len(fields) == 0 || value == "" {
+		return nil, nil
+	}
+
+	var conditions []string
+	var params []interface{}
+	loweredVal := strings.ToLower(value)
+
+	for _, field := range fields {
+		field = strings.TrimSpace(field)
+		if field == "" {
+			continue
+		}
+
+		if !util.FilterSQLIdentifier(field) {
+			return nil, nil
+		}
+
+		columnName := util.CamelToSnakeCase(field)
+		conditions = append(conditions, fmt.Sprintf("lower(%s) = ?", strings.ToLower(columnName)))
+		params = append(params, loweredVal)
+	}
+
+	if len(conditions) == 0 {
+		return nil, nil
+	}
+
+	whereClause := fmt.Sprintf("(%s)", strings.Join(conditions, " OR "))
+	user := User{Owner: organizationName}
+	existed, err := ormer.Engine.Where(whereClause, params...).Get(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	if existed {
+		return &user, nil
+	} else {
+		return nil, nil
+	}
+}
+
 func GetUserByPhoneAndCountryCode(organizationName string, phone string, countryCode string) (*User, error) {
 	if phone == "" {
 		return nil, nil
@@ -135,7 +234,7 @@ func GetUserByFields(organization string, field string) (*User, error) {
 	// check email
 	if strings.Contains(field, "@") {
 		normalizedEmail := strings.ToLower(field)
-		user, err = GetUserByField(organization, "email", normalizedEmail)
+		user, err = GetUserByMultiFields(organization, []string{"email", "secondary_email"}, normalizedEmail)
 		if user != nil || err != nil {
 			return user, err
 		}
@@ -339,7 +438,7 @@ func GetUserOAuthRefreshToken(user *User, providerType string) string {
 	return getUserProperty(user, getOAuthTokenPropertyKey(providerType, "refreshToken"))
 }
 
-func SetUserOAuthProperties(organization *Organization, user *User, providerType string, userInfo *idp.UserInfo, token *oauth2.Token, userMapping ...map[string]string) (bool, error) {
+func SetUserOAuthProperties(organization *Organization, user *User, providerType string, userInfo *idp.UserInfo, token *oauth2.Token, bindingRule *[]string, userMapping ...map[string]string) (bool, error) {
 	if IsFlexibleCustomProvider(providerType) {
 		return true, nil
 	}
@@ -382,8 +481,11 @@ func SetUserOAuthProperties(organization *Organization, user *User, providerType
 	if userInfo.Email != "" {
 		propertyName := fmt.Sprintf("oauth_%s_email", providerType)
 		setUserProperty(user, propertyName, userInfo.Email)
-		if user.Email == "" {
+		if user.Email == "" && bindingRule != nil && slices.Contains(*bindingRule, "Email") {
 			user.Email = userInfo.Email
+		}
+		if user.SecondaryEmail == "" && bindingRule != nil && slices.Contains(*bindingRule, "SecondaryEmail") {
+			user.SecondaryEmail = userInfo.Email
 		}
 	}
 
@@ -725,6 +827,14 @@ func CheckPermissionForUpdateUser(oldUser, newUser *User, isAdmin bool, allowDis
 		item := GetAccountItemByName("Email", organization)
 		if !userVisible(isAdmin, item) {
 			newUser.Email = oldUser.Email
+		} else {
+			itemsChanged = append(itemsChanged, item)
+		}
+	}
+	if oldUser.SecondaryEmail != newUser.SecondaryEmail {
+		item := GetAccountItemByName("Secondary email", organization)
+		if !userVisible(isAdmin, item) {
+			newUser.SecondaryEmail = oldUser.SecondaryEmail
 		} else {
 			itemsChanged = append(itemsChanged, item)
 		}

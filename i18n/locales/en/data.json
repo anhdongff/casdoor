@@ -61,6 +61,8 @@
     "DisplayName cannot be blank": "DisplayName cannot be blank",
     "DisplayName is not valid real name": "DisplayName is not valid real name",
     "Email already exists": "Email already exists",
+    "SecondaryEmail already exists": "Secondary email already exists",
+    "SecondaryEmail cannot be the same as the primary email": "Secondary email cannot be the same as the primary email",
     "Email cannot be empty": "Email cannot be empty",
     "Email is invalid": "Email is invalid",
     "Empty username.": "Empty username.",

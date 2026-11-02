@@ -173,7 +173,7 @@ func (c *ApiController) GetUser() {
 	if id == "" && owner == "" {
 		switch {
 		case email != "":
-			user, err = object.GetUserByEmailOnly(email)
+			user, err = object.GetUserByEmailsOnly(email)
 		case phone != "":
 			user, err = object.GetUserByPhoneOnly(phone)
 		case userId != "":

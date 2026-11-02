@@ -55,24 +55,28 @@ type UserShort struct {
 	Owner string `xorm:"varchar(100) notnull pk" json:"owner"`
 	Name  string `xorm:"varchar(100) notnull pk" json:"name"`
 
-	Id            string `xorm:"varchar(100) index" json:"id"`
-	DisplayName   string `xorm:"varchar(100)" json:"displayName"`
-	Avatar        string `xorm:"varchar(500)" json:"avatar"`
-	Email         string `xorm:"varchar(100) index" json:"email"`
-	EmailVerified bool   `json:"email_verified,omitempty"`
-	Phone         string `xorm:"varchar(100) index" json:"phone"`
+	Id                     string `xorm:"varchar(100) index" json:"id"`
+	DisplayName            string `xorm:"varchar(100)" json:"displayName"`
+	Avatar                 string `xorm:"varchar(500)" json:"avatar"`
+	Email                  string `xorm:"varchar(100) index" json:"email"`
+	SecondaryEmail         string `xorm:"varchar(100) index" json:"secondaryEmail"`
+	EmailVerified          bool   `json:"email_verified,omitempty"`
+	SecondaryEmailVerified bool   `json:"secondaryEmail_verified,omitempty"`
+	Phone                  string `xorm:"varchar(100) index" json:"phone"`
 }
 
 type UserStandard struct {
 	Owner string `xorm:"varchar(100) notnull pk" json:"owner"`
 	Name  string `xorm:"varchar(100) notnull pk" json:"preferred_username,omitempty"`
 
-	Id            string `xorm:"varchar(100) index" json:"id"`
-	DisplayName   string `xorm:"varchar(100)" json:"name,omitempty"`
-	Avatar        string `xorm:"varchar(500)" json:"picture,omitempty"`
-	Email         string `xorm:"varchar(100) index" json:"email,omitempty"`
-	EmailVerified bool   `json:"email_verified,omitempty"`
-	Phone         string `xorm:"varchar(100) index" json:"phone,omitempty"`
+	Id                     string `xorm:"varchar(100) index" json:"id"`
+	DisplayName            string `xorm:"varchar(100)" json:"name,omitempty"`
+	Avatar                 string `xorm:"varchar(500)" json:"picture,omitempty"`
+	Email                  string `xorm:"varchar(100) index" json:"email,omitempty"`
+	EmailVerified          bool   `json:"email_verified,omitempty"`
+	SecondaryEmail         string `xorm:"varchar(100) index" json:"secondaryEmail,omitempty"`
+	SecondaryEmailVerified bool   `json:"secondaryEmail_verified,omitempty"`
+	Phone                  string `xorm:"varchar(100) index" json:"phone,omitempty"`
 }
 
 type UserWithoutThirdIdp struct {
@@ -82,48 +86,50 @@ type UserWithoutThirdIdp struct {
 	UpdatedTime string `xorm:"varchar(100)" json:"updatedTime"`
 	DeletedTime string `xorm:"varchar(100)" json:"deletedTime"`
 
-	Id                string   `xorm:"varchar(100) index" json:"id"`
-	Type              string   `xorm:"varchar(100)" json:"type"`
-	Password          string   `xorm:"varchar(150)" json:"password"`
-	PasswordSalt      string   `xorm:"varchar(100)" json:"passwordSalt"`
-	PasswordType      string   `xorm:"varchar(100)" json:"passwordType"`
-	DisplayName       string   `xorm:"varchar(100)" json:"displayName"`
-	FirstName         string   `xorm:"varchar(100)" json:"firstName"`
-	LastName          string   `xorm:"varchar(100)" json:"lastName"`
-	Avatar            string   `xorm:"varchar(500)" json:"avatar"`
-	AvatarType        string   `xorm:"varchar(100)" json:"avatarType"`
-	PermanentAvatar   string   `xorm:"varchar(500)" json:"permanentAvatar"`
-	Email             string   `xorm:"varchar(100) index" json:"email"`
-	EmailVerified     bool     `json:"email_verified"`
-	Phone             string   `xorm:"varchar(100) index" json:"phone"`
-	CountryCode       string   `xorm:"varchar(6)" json:"countryCode"`
-	Region            string   `xorm:"varchar(100)" json:"region"`
-	Location          string   `xorm:"varchar(100)" json:"location"`
-	Address           []string `json:"address,omitempty"`
-	Affiliation       string   `xorm:"varchar(100)" json:"affiliation"`
-	Title             string   `xorm:"varchar(100)" json:"title"`
-	IdCardType        string   `xorm:"varchar(100)" json:"idCardType"`
-	IdCard            string   `xorm:"varchar(100) index" json:"idCard"`
-	Homepage          string   `xorm:"varchar(100)" json:"homepage"`
-	Bio               string   `xorm:"varchar(100)" json:"bio"`
-	Tag               string   `xorm:"varchar(100)" json:"tag"`
-	Language          string   `xorm:"varchar(100)" json:"language"`
-	Gender            string   `xorm:"varchar(100)" json:"gender"`
-	Birthday          string   `xorm:"varchar(100)" json:"birthday"`
-	Education         string   `xorm:"varchar(100)" json:"education"`
-	Score             int      `json:"score"`
-	Karma             int      `json:"karma"`
-	Ranking           int      `json:"ranking"`
-	IsDefaultAvatar   bool     `json:"isDefaultAvatar"`
-	IsOnline          bool     `json:"isOnline"`
-	IsAdmin           bool     `json:"isAdmin"`
-	IsForbidden       bool     `json:"isForbidden"`
-	IsDeleted         bool     `json:"isDeleted"`
-	SignupApplication string   `xorm:"varchar(100)" json:"signupApplication"`
-	Hash              string   `xorm:"varchar(100)" json:"hash"`
-	PreHash           string   `xorm:"varchar(100)" json:"preHash"`
-	RegisterType      string   `xorm:"varchar(100)" json:"registerType"`
-	RegisterSource    string   `xorm:"varchar(100)" json:"registerSource"`
+	Id                     string   `xorm:"varchar(100) index" json:"id"`
+	Type                   string   `xorm:"varchar(100)" json:"type"`
+	Password               string   `xorm:"varchar(150)" json:"password"`
+	PasswordSalt           string   `xorm:"varchar(100)" json:"passwordSalt"`
+	PasswordType           string   `xorm:"varchar(100)" json:"passwordType"`
+	DisplayName            string   `xorm:"varchar(100)" json:"displayName"`
+	FirstName              string   `xorm:"varchar(100)" json:"firstName"`
+	LastName               string   `xorm:"varchar(100)" json:"lastName"`
+	Avatar                 string   `xorm:"varchar(500)" json:"avatar"`
+	AvatarType             string   `xorm:"varchar(100)" json:"avatarType"`
+	PermanentAvatar        string   `xorm:"varchar(500)" json:"permanentAvatar"`
+	Email                  string   `xorm:"varchar(100) index" json:"email"`
+	SecondaryEmail         string   `xorm:"varchar(100) index" json:"secondaryEmail"`
+	EmailVerified          bool     `json:"email_verified"`
+	SecondaryEmailVerified bool     `json:"secondaryEmail_verified"`
+	Phone                  string   `xorm:"varchar(100) index" json:"phone"`
+	CountryCode            string   `xorm:"varchar(6)" json:"countryCode"`
+	Region                 string   `xorm:"varchar(100)" json:"region"`
+	Location               string   `xorm:"varchar(100)" json:"location"`
+	Address                []string `json:"address,omitempty"`
+	Affiliation            string   `xorm:"varchar(100)" json:"affiliation"`
+	Title                  string   `xorm:"varchar(100)" json:"title"`
+	IdCardType             string   `xorm:"varchar(100)" json:"idCardType"`
+	IdCard                 string   `xorm:"varchar(100) index" json:"idCard"`
+	Homepage               string   `xorm:"varchar(100)" json:"homepage"`
+	Bio                    string   `xorm:"varchar(100)" json:"bio"`
+	Tag                    string   `xorm:"varchar(100)" json:"tag"`
+	Language               string   `xorm:"varchar(100)" json:"language"`
+	Gender                 string   `xorm:"varchar(100)" json:"gender"`
+	Birthday               string   `xorm:"varchar(100)" json:"birthday"`
+	Education              string   `xorm:"varchar(100)" json:"education"`
+	Score                  int      `json:"score"`
+	Karma                  int      `json:"karma"`
+	Ranking                int      `json:"ranking"`
+	IsDefaultAvatar        bool     `json:"isDefaultAvatar"`
+	IsOnline               bool     `json:"isOnline"`
+	IsAdmin                bool     `json:"isAdmin"`
+	IsForbidden            bool     `json:"isForbidden"`
+	IsDeleted              bool     `json:"isDeleted"`
+	SignupApplication      string   `xorm:"varchar(100)" json:"signupApplication"`
+	Hash                   string   `xorm:"varchar(100)" json:"hash"`
+	PreHash                string   `xorm:"varchar(100)" json:"preHash"`
+	RegisterType           string   `xorm:"varchar(100)" json:"registerType"`
+	RegisterSource         string   `xorm:"varchar(100)" json:"registerSource"`
 
 	GitHub   string `xorm:"github varchar(100)" json:"github"`
 	Google   string `xorm:"varchar(100)" json:"google"`
@@ -204,12 +210,14 @@ func getShortUser(user *User) *UserShort {
 		Owner: user.Owner,
 		Name:  user.Name,
 
-		Id:            user.Id,
-		DisplayName:   user.DisplayName,
-		Avatar:        user.Avatar,
-		Email:         user.Email,
-		EmailVerified: user.EmailVerified,
-		Phone:         user.Phone,
+		Id:                     user.Id,
+		DisplayName:            user.DisplayName,
+		Avatar:                 user.Avatar,
+		Email:                  user.Email,
+		SecondaryEmail:         user.SecondaryEmail,
+		EmailVerified:          user.EmailVerified,
+		SecondaryEmailVerified: user.SecondaryEmailVerified,
+		Phone:                  user.Phone,
 	}
 	return res
 }
@@ -219,12 +227,14 @@ func getStandardUser(user *User) *UserStandard {
 		Owner: user.Owner,
 		Name:  user.Name,
 
-		Id:            user.Id,
-		DisplayName:   user.DisplayName,
-		Avatar:        user.Avatar,
-		Email:         user.Email,
-		EmailVerified: user.EmailVerified,
-		Phone:         user.Phone,
+		Id:                     user.Id,
+		DisplayName:            user.DisplayName,
+		Avatar:                 user.Avatar,
+		Email:                  user.Email,
+		SecondaryEmail:         user.SecondaryEmail,
+		SecondaryEmailVerified: user.SecondaryEmailVerified,
+		EmailVerified:          user.EmailVerified,
+		Phone:                  user.Phone,
 	}
 	return res
 }
@@ -246,48 +256,50 @@ func getUserWithoutThirdIdp(user *User) *UserWithoutThirdIdp {
 		UpdatedTime: user.UpdatedTime,
 		DeletedTime: user.DeletedTime,
 
-		Id:                user.Id,
-		Type:              user.Type,
-		Password:          user.Password,
-		PasswordSalt:      user.PasswordSalt,
-		PasswordType:      user.PasswordType,
-		DisplayName:       user.DisplayName,
-		FirstName:         user.FirstName,
-		LastName:          user.LastName,
-		Avatar:            user.Avatar,
-		AvatarType:        user.AvatarType,
-		PermanentAvatar:   user.PermanentAvatar,
-		Email:             user.Email,
-		EmailVerified:     user.EmailVerified,
-		Phone:             user.Phone,
-		CountryCode:       user.CountryCode,
-		Region:            user.Region,
-		Location:          user.Location,
-		Address:           getNonEmptyAddress(user.Address),
-		Affiliation:       user.Affiliation,
-		Title:             user.Title,
-		IdCardType:        user.IdCardType,
-		IdCard:            user.IdCard,
-		Homepage:          user.Homepage,
-		Bio:               user.Bio,
-		Tag:               user.Tag,
-		Language:          user.Language,
-		Gender:            user.Gender,
-		Birthday:          user.Birthday,
-		Education:         user.Education,
-		Score:             user.Score,
-		Karma:             user.Karma,
-		Ranking:           user.Ranking,
-		IsDefaultAvatar:   user.IsDefaultAvatar,
-		IsOnline:          user.IsOnline,
-		IsAdmin:           user.IsAdmin,
-		IsForbidden:       user.IsForbidden,
-		IsDeleted:         user.IsDeleted,
-		SignupApplication: user.SignupApplication,
-		Hash:              user.Hash,
-		PreHash:           user.PreHash,
-		RegisterType:      user.RegisterType,
-		RegisterSource:    user.RegisterSource,
+		Id:                     user.Id,
+		Type:                   user.Type,
+		Password:               user.Password,
+		PasswordSalt:           user.PasswordSalt,
+		PasswordType:           user.PasswordType,
+		DisplayName:            user.DisplayName,
+		FirstName:              user.FirstName,
+		LastName:               user.LastName,
+		Avatar:                 user.Avatar,
+		AvatarType:             user.AvatarType,
+		PermanentAvatar:        user.PermanentAvatar,
+		Email:                  user.Email,
+		EmailVerified:          user.EmailVerified,
+		SecondaryEmail:         user.SecondaryEmail,
+		SecondaryEmailVerified: user.SecondaryEmailVerified,
+		Phone:                  user.Phone,
+		CountryCode:            user.CountryCode,
+		Region:                 user.Region,
+		Location:               user.Location,
+		Address:                getNonEmptyAddress(user.Address),
+		Affiliation:            user.Affiliation,
+		Title:                  user.Title,
+		IdCardType:             user.IdCardType,
+		IdCard:                 user.IdCard,
+		Homepage:               user.Homepage,
+		Bio:                    user.Bio,
+		Tag:                    user.Tag,
+		Language:               user.Language,
+		Gender:                 user.Gender,
+		Birthday:               user.Birthday,
+		Education:              user.Education,
+		Score:                  user.Score,
+		Karma:                  user.Karma,
+		Ranking:                user.Ranking,
+		IsDefaultAvatar:        user.IsDefaultAvatar,
+		IsOnline:               user.IsOnline,
+		IsAdmin:                user.IsAdmin,
+		IsForbidden:            user.IsForbidden,
+		IsDeleted:              user.IsDeleted,
+		SignupApplication:      user.SignupApplication,
+		Hash:                   user.Hash,
+		PreHash:                user.PreHash,
+		RegisterType:           user.RegisterType,
+		RegisterSource:         user.RegisterSource,
 
 		GitHub:   user.GitHub,
 		Google:   user.Google,
