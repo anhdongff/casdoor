@@ -92,13 +92,13 @@ func GetTokensByUser(owner, username string) ([]*Token, error) {
 
 // generateLogoutSignature generates an HMAC-SHA256 signature for the logout notification
 // The signature is computed over the critical fields to prevent tampering
-func generateLogoutSignature(clientSecret string, owner string, name string, nonce string, timestamp int64, sessionIds []string, accessTokenHashes []string) string {
+func generateLogoutSignature(clientSecret string, owner string, name string, nonce string, timestamp int64, sessionIds []string, accessTokenHashes []string, email string, secondaryEmail string) string {
 	// Create a deterministic string from all fields that need to be verified
 	// Use strings.Join to avoid trailing separators and improve performance
 	sessionIdsStr := strings.Join(sessionIds, ",")
 	tokenHashesStr := strings.Join(accessTokenHashes, ",")
 
-	data := fmt.Sprintf("%s|%s|%s|%d|%s|%s", owner, name, nonce, timestamp, sessionIdsStr, tokenHashesStr)
+	data := fmt.Sprintf("%s|%s|%s|%d|%s|%s|%s|%s", owner, name, nonce, timestamp, sessionIdsStr, tokenHashesStr, email, secondaryEmail)
 	return util.GetHmacSha256(clientSecret, data)
 }
 
@@ -145,6 +145,8 @@ func SendSsoLogoutNotifications(user *User, sessionIds []string, tokens []*Token
 		timestamp,
 		sessionIds,
 		accessTokenHashes,
+		user.Email,
+		user.SecondaryEmail,
 	)
 
 	// Prepare the notification data
@@ -233,6 +235,8 @@ func SendSsoLogoutNotificationsToAllAllowedApplications(user *User, sessionIds [
 			timestamp,
 			sessionIds,
 			accessTokenHashes,
+			user.Email,
+			user.SecondaryEmail,
 		)
 
 		notificationObj := SsoLogoutNotification{
@@ -291,6 +295,8 @@ func VerifySsoLogoutSignature(clientSecret string, notification *SsoLogoutNotifi
 		notification.Timestamp,
 		notification.SessionIds,
 		notification.AccessTokenHashes,
+		notification.Email,
+		notification.SecondaryEmail,
 	)
 	return notification.Signature == expectedSignature
 }

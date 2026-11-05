@@ -104,8 +104,8 @@ func NewInternetOnlyHttpClient(timeout time.Duration) *http.Client {
 }
 
 func isNonInternetAddress(address string) bool {
-	// return IsHostIntranet(address) || isUnspecifiedIp(address) || isSharedAddressSpaceIp(address)
-	return isUnspecifiedIp(address) || isSharedAddressSpaceIp(address)
+	return IsHostIntranet(address) || isUnspecifiedIp(address) || isSharedAddressSpaceIp(address)
+	// return isUnspecifiedIp(address) || isSharedAddressSpaceIp(address)
 }
 
 // CheckInternetHost refuses a host (a hostname, "host:port" or URL) that resolves to an address
@@ -142,8 +142,8 @@ func CheckInternetHost(host string) error {
 func NewNonLocalHttpTransport(timeout time.Duration) *http.Transport {
 	isRefused := func(address string) bool {
 		ip := parseDialIp(address)
-		// return ip != nil && (ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() || isSharedAddressSpaceIp(address))
-		return ip != nil && (ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() || isSharedAddressSpaceIp(address))
+		return ip != nil && (ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() || isSharedAddressSpaceIp(address))
+		// return ip != nil && (ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() || isSharedAddressSpaceIp(address))
 	}
 
 	return newRestrictedHttpTransport(timeout, isRefused, "loopback, link-local and metadata addresses cannot be requested")

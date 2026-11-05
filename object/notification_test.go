@@ -27,22 +27,24 @@ func TestGenerateLogoutSignature(t *testing.T) {
 	timestamp := int64(1699900000)
 	sessionIds := []string{"session-1", "session-2"}
 	accessTokenHashes := []string{"hash-1", "hash-2"}
+	email := "test@example.com"
+	secondaryEmail := "test2@example.com"
 
-	sig1 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes)
-	sig2 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes)
+	sig1 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes, email, secondaryEmail)
+	sig2 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes, email, secondaryEmail)
 
 	if sig1 != sig2 {
 		t.Errorf("Signature should be deterministic, got %s and %s", sig1, sig2)
 	}
 
 	// Test that different inputs produce different signatures
-	sig3 := generateLogoutSignature(clientSecret, owner, "different-user", nonce, timestamp, sessionIds, accessTokenHashes)
+	sig3 := generateLogoutSignature(clientSecret, owner, "different-user", nonce, timestamp, sessionIds, accessTokenHashes, email, secondaryEmail)
 	if sig1 == sig3 {
 		t.Error("Different inputs should produce different signatures")
 	}
 
 	// Test with different client secret
-	sig4 := generateLogoutSignature("different-secret", owner, name, nonce, timestamp, sessionIds, accessTokenHashes)
+	sig4 := generateLogoutSignature("different-secret", owner, name, nonce, timestamp, sessionIds, accessTokenHashes, email, secondaryEmail)
 	if sig1 == sig4 {
 		t.Error("Different client secrets should produce different signatures")
 	}
@@ -56,9 +58,11 @@ func TestVerifySsoLogoutSignature(t *testing.T) {
 	timestamp := int64(1699900000)
 	sessionIds := []string{"session-1", "session-2"}
 	accessTokenHashes := []string{"hash-1", "hash-2"}
+	email := "test@example.com"
+	secondaryEmail := "test2@example.com"
 
 	// Generate a valid signature
-	signature := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes)
+	signature := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, sessionIds, accessTokenHashes, email, secondaryEmail)
 
 	// Create a notification with the valid signature
 	notification := &SsoLogoutNotification{
@@ -136,10 +140,12 @@ func TestGenerateLogoutSignatureWithEmptyArrays(t *testing.T) {
 	name := "test-user"
 	nonce := "test-nonce-123"
 	timestamp := int64(1699900000)
+	email := "test@example.com"
+	secondaryEmail := "test2@example.com"
 
 	// Test with empty session IDs and token hashes
-	sig1 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, []string{}, []string{})
-	sig2 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, nil, nil)
+	sig1 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, []string{}, []string{}, email, secondaryEmail)
+	sig2 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, nil, nil, email, secondaryEmail)
 
 	// Empty slice and nil should produce the same signature
 	if sig1 != sig2 {
@@ -147,7 +153,7 @@ func TestGenerateLogoutSignatureWithEmptyArrays(t *testing.T) {
 	}
 
 	// Should be different from non-empty arrays
-	sig3 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, []string{"session-1"}, []string{"hash-1"})
+	sig3 := generateLogoutSignature(clientSecret, owner, name, nonce, timestamp, []string{"session-1"}, []string{"hash-1"}, email, secondaryEmail)
 	if sig1 == sig3 {
 		t.Error("Empty arrays should produce different signature from non-empty arrays")
 	}
