@@ -118,6 +118,19 @@ export default function UserListPage({
           </a>
         ) : null,
     },
+    {
+      dataIndex: "secondaryEmail",
+      title: i18next.t("general:Secondary Email"),
+      width: 180,
+      sortable: true,
+      searchable: true,
+      render: (value) =>
+        value ? (
+          <a href={`mailto:${value}`} className="underline-offset-4 hover:underline">
+            {value}
+          </a>
+        ) : null,
+    },
     textColumn({dataIndex: "phone", title: i18next.t("general:Phone"), width: 130, searchable: true}),
     textColumn({dataIndex: "affiliation", title: i18next.t("user:Affiliation"), width: 140, searchable: true}),
     textColumn({dataIndex: "realName", title: i18next.t("application:Real name"), width: 130, searchable: true}),
