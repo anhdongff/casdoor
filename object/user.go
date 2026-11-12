@@ -258,22 +258,24 @@ type User struct {
 }
 
 type Userinfo struct {
-	Sub           string       `json:"sub"`
-	Iss           string       `json:"iss"`
-	Aud           string       `json:"aud"`
-	Name          string       `json:"preferred_username,omitempty"`
-	DisplayName   string       `json:"name,omitempty"`
-	Email         string       `json:"email,omitempty"`
-	EmailVerified bool         `json:"email_verified,omitempty"`
-	Avatar        string       `json:"picture,omitempty"`
-	Address       *OIDCAddress `json:"address,omitempty"`
-	Phone         string       `json:"phone,omitempty"`
-	PhoneNumber   string       `json:"phone_number,omitempty"`
-	RealName      string       `json:"real_name,omitempty"`
-	IsVerified    bool         `json:"is_verified,omitempty"`
-	Groups        []string     `json:"groups,omitempty"`
-	Roles         []string     `json:"roles,omitempty"`
-	Permissions   []string     `json:"permissions,omitempty"`
+	Sub                    string       `json:"sub"`
+	Iss                    string       `json:"iss"`
+	Aud                    string       `json:"aud"`
+	Name                   string       `json:"preferred_username,omitempty"`
+	DisplayName            string       `json:"name,omitempty"`
+	Email                  string       `json:"email,omitempty"`
+	EmailVerified          bool         `json:"email_verified,omitempty"`
+	SecondaryEmail         string       `json:"secondary_email,omitempty"`
+	SecondaryEmailVerified bool         `json:"secondary_email_verified,omitempty"`
+	Avatar                 string       `json:"picture,omitempty"`
+	Address                *OIDCAddress `json:"address,omitempty"`
+	Phone                  string       `json:"phone,omitempty"`
+	PhoneNumber            string       `json:"phone_number,omitempty"`
+	RealName               string       `json:"real_name,omitempty"`
+	IsVerified             bool         `json:"is_verified,omitempty"`
+	Groups                 []string     `json:"groups,omitempty"`
+	Roles                  []string     `json:"roles,omitempty"`
+	Permissions            []string     `json:"permissions,omitempty"`
 
 	CustomClaims map[string]interface{} `json:"-"`
 }
@@ -1566,6 +1568,11 @@ func GetUserInfo(user *User, scope string, aud string, host string) (*Userinfo, 
 	if strings.Contains(scope, "email") && allowed("Email") {
 		resp.Email = user.Email
 		resp.EmailVerified = user.EmailVerified
+	}
+
+	if strings.Contains(scope, "email") && allowed("SecondaryEmail") {
+		resp.SecondaryEmail = user.SecondaryEmail
+		resp.SecondaryEmailVerified = user.SecondaryEmailVerified
 	}
 
 	if strings.Contains(scope, "address") && allowed("Location") {
