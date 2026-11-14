@@ -843,7 +843,7 @@ export default function LoginPage({type = "login", application: applicationProp,
     // a widget captcha is single-use, so a rejected sign-in needs a fresh one
     const usedInlineCaptcha = Setting.isInlineCaptchaEnabled(application) && captchaValues !== undefined;
     const onRejected = () => {
-      if (usedInlineCaptcha && !String(values.signinMethod).includes("Verification code")) {
+      if (usedInlineCaptcha) {
         refreshInlineCaptcha();
       }
     };
@@ -1000,7 +1000,7 @@ export default function LoginPage({type = "login", application: applicationProp,
 
     // Password/LDAP sign-in may need a captcha first; the code flow is already
     // rate-limited by the code itself.
-    if (loginMethod === "password" || loginMethod === "ldap") {
+    if (loginMethod === "password" || loginMethod === "ldap" || isCodeMethod) {
       const captchaRule = Setting.getCaptchaRule(application);
       if (Setting.isInlineCaptchaEnabled(application)) {
         if (captchaRule === Setting.CaptchaRule.Always && !captchaValues?.captchaToken) {

@@ -1,12 +1,12 @@
 import * as React from "react";
 import i18next from "i18next";
-import {Button} from "@/components/ui/button";
-import {CodeInput} from "@/components/auth/CodeInput";
-import {CaptchaModal} from "@/components/common/CaptchaModal";
+import { Button } from "@/components/ui/button";
+import { CodeInput } from "@/components/auth/CodeInput";
+import { CaptchaModal } from "@/components/common/CaptchaModal";
 import * as AuthBackend from "@/backend/AuthBackend";
 import * as UserBackend from "@/backend/UserBackend";
 import * as Setting from "@/lib/setting";
-import {cn} from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export interface CaptchaValues {
   captchaType?: string;
@@ -113,6 +113,9 @@ export function useSendCode({
         if (sent) {
           setSeconds(resendTimeout);
           onSent?.();
+          if (useInlineCaptcha) {
+            refreshCaptcha?.();
+          }
         } else if (useInlineCaptcha) {
           refreshCaptcha?.();
         }
@@ -184,7 +187,7 @@ export function useSendCode({
     />
   ) : null;
 
-  return {seconds, sending, request, captchaModal, resetCountdown: () => setSeconds(0)};
+  return { seconds, sending, request, captchaModal, resetCountdown: () => setSeconds(0) };
 }
 
 /**
@@ -209,7 +212,7 @@ export function SendCodeInput({
   onComplete,
 }: SendCodeInputProps) {
   const [sent, setSent] = React.useState(false);
-  const {seconds, sending, request, captchaModal} = useSendCode({
+  const { seconds, sending, request, captchaModal } = useSendCode({
     method,
     destType,
     dest,

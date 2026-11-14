@@ -859,6 +859,34 @@ func (c *ApiController) Login() {
 			}
 
 			lookupUsername := getSigninLookupUsername(authForm.Username, authForm.CountryCode)
+
+			// Enable captcha when submitting the verification code, to prevent brute-force attacks on the code
+			clientIp := util.GetClientIpFromRequest(c.Ctx.Request)
+
+			var enableCaptcha bool
+			if enableCaptcha, err = object.CheckToEnableCaptcha(application, authForm.Organization, lookupUsername, clientIp); err != nil {
+				c.ResponseError(err.Error())
+				return
+			} else if enableCaptcha {
+				captchaProvider, err := object.GetCaptchaProviderByApplication(util.GetId(application.Owner, application.Name), "false", c.GetAcceptLanguage())
+				if err != nil {
+					c.ResponseError(err.Error())
+					return
+				}
+
+				var isHuman bool
+				isHuman, err = verifyAuthFormCaptcha(captchaProvider, &authForm)
+				if err != nil {
+					c.ResponseError(err.Error())
+					return
+				}
+
+				if !isHuman {
+					c.ResponseError(c.T("verification:Turing test failed."))
+					return
+				}
+			}
+
 			if user, err = object.GetUserByFieldsForSharedApp(application, authForm.Organization, lookupUsername); err != nil {
 				c.ResponseError(err.Error(), nil)
 				return
