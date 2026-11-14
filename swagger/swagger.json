@@ -9829,6 +9829,12 @@
                 "emailVerified": {
                     "type": "boolean"
                 },
+                "secondaryEmail": {
+                    "type": "string"
+                },
+                "secondaryEmailVerified": {
+                    "type": "boolean"
+                },
                 "eveonline": {
                     "type": "string"
                 },
@@ -10256,6 +10262,12 @@
                     "type": "string"
                 },
                 "email_verified": {
+                    "type": "boolean"
+                },
+                "secondary_email": {
+                    "type": "string"
+                },
+                "secondary_email_verified": {
                     "type": "boolean"
                 },
                 "groups": {
