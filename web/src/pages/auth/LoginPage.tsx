@@ -29,6 +29,7 @@ import {useSendCode, type CaptchaValues} from "@/components/auth/SendCodeInput";
 import {CodeInput, VerificationCodeLength} from "@/components/auth/CodeInput";
 import {CaptchaModal, type CaptchaHandle} from "@/components/common/CaptchaModal";
 import {getCaptchaProvider} from "@/lib/captcha";
+import {getRememberedOrganization, rememberOrganization} from "@/lib/login-organization";
 import {useAccount} from "@/hooks/use-account";
 import {authConfig} from "@/auth/Auth";
 import * as Util from "@/auth/Util";
@@ -231,20 +232,40 @@ function getSigninMethodName(method: LoginMethod) {
  * picking one or by typing its name.
  */
 function OrganizationChoiceBox({mode}: {mode: string}) {
-  const [name, setName] = React.useState("");
+  const remembered = getRememberedOrganization();
+  const [name, setName] = React.useState(remembered);
+  const [organizations, setOrganizations] = React.useState<{name: string; displayName: string}[]>([]);
   const go = (organization: string) => {
     if (!organization) {
       Setting.showMessage("error", i18next.t("login:Please input your organization name!"));
       return;
     }
+    rememberOrganization(organization);
     Setting.goToLink(`/login/${organization}?orgChoiceMode=None`);
   };
 
+  React.useEffect(() => {
+    if (mode !== "Select") {
+      return;
+    }
+    OrganizationBackend.getOrganizationNames("admin").then((res: any) => {
+      if (res.status === "ok") {
+        setOrganizations(res.data ?? []);
+      }
+    });
+  }, [mode]);
+
   if (mode === "Select") {
+    const rememberedOrganization = organizations.find((organization) => organization.name === remembered);
     return (
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">{i18next.t("login:Please select an organization to sign in")}</p>
-        <OrganizationSelect value="" onChange={go} />
+        {rememberedOrganization ? (
+          <Button className="w-full" onClick={() => go(rememberedOrganization.name)}>
+            {i18next.t("login:Continue with")} {rememberedOrganization.displayName || rememberedOrganization.name}
+          </Button>
+        ) : null}
+        <OrganizationSelect value="" onChange={go} organizations={organizations} />
       </div>
     );
   }
@@ -748,6 +769,7 @@ export default function LoginPage({type = "login", application: applicationProp,
 
   /** the organization is encoded in the client id or the path, so keep the query string */
   const switchLoginOrganization = (name: string) => {
+    rememberOrganization(name);
     const searchParams = new URLSearchParams(window.location.search);
 
     const clientId = searchParams.get("client_id");
@@ -767,6 +789,37 @@ export default function LoginPage({type = "login", application: applicationProp,
     searchParams.set("orgChoiceMode", "None");
     Setting.goToLink(`/login/${name}?${searchParams.toString()}`);
   };
+
+  React.useEffect(() => {
+    if (preview || account !== null || !application) {
+      return;
+    }
+
+    const hasSelect = (application.signinItems ?? []).some((item: any) => item.name === "Select organization" && item.visible);
+    const remembered = getRememberedOrganization();
+    if (!hasSelect || !remembered || remembered === application.organization) {
+      return;
+    }
+
+    const clientId = new URLSearchParams(location.search).get("client_id");
+    const namesNoOrganization = type === "code"
+      ? application.isShared && !!clientId && !clientId.includes("-org-")
+      : type === "login" && !owner;
+    if (!namesNoOrganization) {
+      return;
+    }
+
+    let cancelled = false;
+    OrganizationBackend.getOrganizationNames("admin").then((res: any) => {
+      const exists = res.status === "ok" && (res.data ?? []).some((organization: any) => organization.name === remembered);
+      if (!cancelled && exists) {
+        switchLoginOrganization(remembered);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [application, account, type, owner, preview]);
 
   const refreshInlineCaptcha = () => captchaRef.current?.loadCaptcha();
 
