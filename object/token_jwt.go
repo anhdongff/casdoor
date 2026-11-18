@@ -701,9 +701,9 @@ func generateJwtTokenWithOptions(application *Application, user *User, provider 
 	}
 
 	// a URL client_id is kept as it is, the client checks it
-	if application.IsShared && !IsClientIdMetadataUrl(application.ClientId) {
-		claims.Audience = []string{application.ClientId + "-org-" + user.Owner}
-	}
+	// if application.IsShared && !IsClientIdMetadataUrl(application.ClientId) {
+	// 	claims.Audience = []string{application.ClientId + "-org-" + user.Owner}
+	// }
 
 	// the ID token is its own JWT so that it can't be replayed as the access token (RFC 8725 3.12),
 	// and its audience stays the client even when an RFC 8707 resource retargets the access token
