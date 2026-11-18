@@ -667,7 +667,7 @@ func getExistUserByBindingRule(providerItem *object.ProviderItem, application *o
 		// Find existing user with Email, only one the provider vouches for: a provider
 		// account with someone else's unverified email must not take over their account
 		if rule == "Email" && userInfo.EmailVerified {
-			user, err = object.GetUserByField(application.Organization, "email", userInfo.Email)
+			user, err = object.GetUserByFieldForApplication(application, "email", userInfo.Email)
 			if err != nil {
 				return nil, err
 			}
@@ -677,7 +677,7 @@ func getExistUserByBindingRule(providerItem *object.ProviderItem, application *o
 		}
 
 		if rule == "SecondaryEmail" && userInfo.EmailVerified {
-			user, err = object.GetUserByField(application.Organization, "secondary_email", userInfo.Email)
+			user, err = object.GetUserByFieldForApplication(application, "secondary_email", userInfo.Email)
 			if err != nil {
 				return nil, err
 			}
@@ -688,7 +688,7 @@ func getExistUserByBindingRule(providerItem *object.ProviderItem, application *o
 
 		// Find existing user with phone number, only one the provider vouches for, like the email
 		if rule == "Phone" && userInfo.PhoneVerified {
-			user, err = object.GetUserByPhoneAndCountryCode(application.Organization, userInfo.Phone, userInfo.CountryCode)
+			user, err = object.GetUserByPhoneAndCountryCodeForApplication(application, userInfo.Phone, userInfo.CountryCode)
 			if err != nil {
 				return nil, err
 			}
@@ -702,7 +702,7 @@ func getExistUserByBindingRule(providerItem *object.ProviderItem, application *o
 		// existing users when usernames match, particularly useful for enterprise
 		// scenarios where signup is disabled and users already exist in Casdoor
 		if rule == "Name" {
-			user, err = object.GetUserByName(application.Organization, userInfo.Username)
+			user, err = object.GetUserByNameForApplication(application, userInfo.Username)
 			if err != nil {
 				return nil, err
 			}
@@ -719,25 +719,26 @@ func isEmailBindable(user *object.User) bool {
 	return user.EmailVerified || user.RegisterType != "Application Signup"
 }
 
-func getUserByProvider(organization string, provider *object.Provider, providerId string, extra ...map[string]string) (*object.User, error) {
+func getUserByProvider(application *object.Application, provider *object.Provider, providerId string, extra ...map[string]string) (*object.User, error) {
 	if object.IsFlexibleCustomProvider(provider.Type) {
-		return object.GetUserByThirdPartyLink(organization, provider.Name, providerId)
+		return object.GetUserByThirdPartyLinkForApplication(application, provider.Name, providerId)
 	}
 	if provider.Category == "SAML" {
-		return object.GetUserByFields(organization, providerId)
+		return object.GetUserByFieldsForApplication(application, providerId)
 	}
 
-	user, err := object.GetUserByField(organization, provider.Type, providerId)
+	user, err := object.GetUserByFieldForApplication(application, provider.Type, providerId)
 	if err != nil || user != nil {
 		return user, err
 	}
 
 	if provider.Type == "WeCom" && provider.SubType == "Internal" {
-		return object.GetUserByFieldIgnoreCase(organization, provider.Type, providerId)
+		return object.GetUserByFieldIgnoreCaseForApplication(application, provider.Type, providerId)
 	}
-	// a member who signed in through another WeChat app of the same open platform account
+	// a member who signed in through another WeChat app of the same open platform account,
+	// the merge policy belongs to one organization
 	if provider.Type == "WeChat" && len(extra) > 0 {
-		return object.GetUserByWechatUnionId(organization, extra[0]["wechat_unionid"])
+		return object.GetUserByWechatUnionId(application.Organization, extra[0]["wechat_unionid"])
 	}
 	return nil, nil
 }
@@ -1224,16 +1225,29 @@ func (c *ApiController) Login() {
 		}
 
 		if authForm.Method == "signup" || authForm.Method == "signin" {
-			user := &object.User{}
-			if provider.Category == "SAML" && !object.IsFlexibleCustomProvider(provider.Type) {
-				// The userInfo.Id is the NameID in SAML response, it could be name / email / phone
-				user, err = object.GetUserByFields(application.Organization, userInfo.Id)
-				if err != nil {
-					c.ResponseError(err.Error())
-					return
+			// a user of another organization signs in through a shared application with that organization
+			useOrganizationOf := func(user *object.User) bool {
+				if user == nil || (organization != nil && user.Owner == organization.Name) {
+					return true
 				}
-			} else if provider.Category == "OAuth" || object.IsFlexibleCustomProvider(provider.Type) {
-				user, err = getUserByProvider(application.Organization, provider, userInfo.Id, userInfo.Extra)
+				var userOrganization *object.Organization
+				userOrganization, err = object.GetOrganization(util.GetId("admin", user.Owner))
+				if err != nil || userOrganization == nil {
+					if err == nil {
+						err = fmt.Errorf(c.T("auth:The organization: %s does not exist"), user.Owner)
+					}
+					c.ResponseError(err.Error())
+					return false
+				}
+				organization = userOrganization
+				authForm.Organization = user.Owner
+				return true
+			}
+
+			user := &object.User{}
+			if provider.Category == "SAML" || provider.Category == "OAuth" || object.IsFlexibleCustomProvider(provider.Type) {
+				// The userInfo.Id is the NameID in SAML response, it could be name / email / phone
+				user, err = getUserByProvider(application, provider, userInfo.Id, userInfo.Extra)
 				if err != nil {
 					c.ResponseError(err.Error())
 					return
@@ -1241,6 +1255,10 @@ func (c *ApiController) Login() {
 			}
 
 			if user != nil && !user.IsDeleted {
+				if !useOrganizationOf(user) {
+					return
+				}
+
 				// Sign in via OAuth (want to sign up but already have account)
 				// sync info from 3rd-party if possible
 				_, err = object.SetUserOAuthProperties(organization, user, provider.Type, userInfo, token, bindingRule, provider.UserMapping)
@@ -1264,8 +1282,12 @@ func (c *ApiController) Login() {
 					return
 				}
 
+				if user != nil && !useOrganizationOf(user) {
+					return
+				}
+
 				if user == nil {
-					if !application.EnableSignUp || !application.IsSignupAllowedFor(application.Organization) {
+					if application.IsShared || !application.EnableSignUp || !application.IsSignupAllowedFor(application.Organization) {
 						c.ResponseError(fmt.Sprintf(c.T("auth:The account for provider: %s and username: %s (%s) does not exist and is not allowed to sign up as new account, please contact your IT support"), provider.Type, userInfo.Username, userInfo.DisplayName))
 						return
 					}
@@ -1433,7 +1455,7 @@ func (c *ApiController) Login() {
 			}
 
 			var oldUser *object.User
-			oldUser, err = getUserByProvider(application.Organization, provider, userInfo.Id, userInfo.Extra)
+			oldUser, err = getUserByProvider(application, provider, userInfo.Id, userInfo.Extra)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return

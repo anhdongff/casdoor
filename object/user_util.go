@@ -17,6 +17,7 @@ package object
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -266,6 +267,90 @@ func GetUserByName(organization string, name string) (*User, error) {
 		name = strings.ToLower(name)
 	}
 	return GetUserByField(organization, "name", strings.TrimSpace(name))
+}
+
+var ErrAmbiguousOrganizationUser = errors.New("the account matches users of more than one organization, please contact your IT support")
+
+// organizationScope is the SQL condition on the "owner" column that limits a look-up to the users who may
+// sign in through the application: its own organization, plus every organization using it as the default
+// application when it is shared. It is a sub-query, so the number of organizations does not matter.
+func organizationScope(application *Application, column string) (string, []interface{}) {
+	if !application.IsShared {
+		return column + " = ?", []interface{}{application.Organization}
+	}
+	return fmt.Sprintf("(%s = ? OR %s IN (SELECT name FROM organization WHERE default_application = ?))", column, column),
+		[]interface{}{application.Organization, application.Name}
+}
+
+func getSingleUserForApplication(application *Application, where string, params ...interface{}) (*User, error) {
+	scope, scopeParams := organizationScope(application, "owner")
+	users := []*User{}
+	err := ormer.Engine.Where(scope, scopeParams...).And("("+where+")", params...).Limit(2).Find(&users)
+	if err != nil {
+		return nil, err
+	}
+	if len(users) > 1 {
+		return nil, ErrAmbiguousOrganizationUser
+	}
+	if len(users) == 0 {
+		return nil, nil
+	}
+	return users[0], nil
+}
+
+// GetUserByFieldForApplication is GetUserByField over the organizations of the application in one query,
+// a value shared by users of different organizations is an error.
+func GetUserByFieldForApplication(application *Application, field string, value string) (*User, error) {
+	if field == "" || value == "" || !util.FilterSQLIdentifier(field) {
+		return nil, nil
+	}
+	return getSingleUserForApplication(application, fmt.Sprintf("%s=?", strings.ToLower(field)), value)
+}
+
+func GetUserByFieldIgnoreCaseForApplication(application *Application, field string, value string) (*User, error) {
+	if field == "" || value == "" || !util.FilterSQLIdentifier(field) {
+		return nil, nil
+	}
+	return getSingleUserForApplication(application, fmt.Sprintf("lower(%s)=?", strings.ToLower(field)), strings.ToLower(value))
+}
+
+func GetUserByNameForApplication(application *Application, name string) (*User, error) {
+	if conf.GetConfigBool("isUsernameLowered") {
+		name = strings.ToLower(name)
+	}
+	return GetUserByFieldForApplication(application, "name", strings.TrimSpace(name))
+}
+
+func GetUserByPhoneAndCountryCodeForApplication(application *Application, phone string, countryCode string) (*User, error) {
+	if phone == "" {
+		return nil, nil
+	}
+	return getSingleUserForApplication(application, "phone = ? AND country_code = ?", phone, countryCode)
+}
+
+// GetUserByFieldsForApplication is GetUserByFields for a login that names no organization. Those of the
+// application's organization alone keep the full look-up, otherwise a name, an email or a phone number is matched.
+func GetUserByFieldsForApplication(application *Application, field string) (*User, error) {
+	if !application.IsShared {
+		return GetUserByFields(application.Organization, field)
+	}
+
+	if conf.GetConfigBool("isUsernameLowered") {
+		field = strings.ToLower(field)
+	}
+	field = strings.TrimSpace(field)
+	if field == "" {
+		return nil, nil
+	}
+
+	nationalPhone, regionCode := util.ParseE164Phone(field)
+	where := "name = ? OR email = ? OR secondary_email = ? OR phone = ?"
+	params := []interface{}{field, strings.ToLower(field), strings.ToLower(field), nationalPhone}
+	if regionCode != "" {
+		where = "name = ? OR email = ? OR secondary_email = ? OR (phone = ? AND country_code = ?)"
+		params = append(params, regionCode)
+	}
+	return getSingleUserForApplication(application, where, params...)
 }
 
 func GetUserByFields(organization string, field string) (*User, error) {

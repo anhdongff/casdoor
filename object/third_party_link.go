@@ -76,6 +76,27 @@ func GetUserByThirdPartyLink(owner string, providerName string, providerId strin
 	return getUser(link.Owner, link.UserName)
 }
 
+func GetUserByThirdPartyLinkForApplication(application *Application, providerName string, providerId string) (*User, error) {
+	if providerName == "" || providerId == "" {
+		return nil, nil
+	}
+
+	scope, scopeParams := organizationScope(application, "owner")
+	links := []*ThirdPartyLink{}
+	err := ormer.Engine.Where(scope, scopeParams...).And("provider_name = ? AND provider_id = ?", providerName, providerId).Limit(2).Find(&links)
+	if err != nil {
+		return nil, err
+	}
+	if len(links) > 1 {
+		return nil, ErrAmbiguousOrganizationUser
+	}
+	if len(links) == 0 {
+		return nil, nil
+	}
+
+	return getUser(links[0].Owner, links[0].UserName)
+}
+
 func AddThirdPartyLink(link *ThirdPartyLink) (bool, error) {
 	existingLink, err := GetThirdPartyLink(link.Owner, link.UserName, link.ProviderName)
 	if err != nil {
