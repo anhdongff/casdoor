@@ -139,11 +139,7 @@ func (c *ApiController) addMagicLinkUser(application *object.Application, magicL
 	email := strings.ToLower(magicLink.Email)
 	username := id
 	if organization.UseEmailAsUsername {
-		existedUser, err := object.GetUser(util.GetId(application.Organization, email))
-		if err != nil {
-			return nil, err
-		}
-		if existedUser == nil {
+		if !object.HasUserByFieldGlobal("name", email) {
 			username = email
 		}
 	}

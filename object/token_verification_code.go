@@ -251,11 +251,7 @@ func addVerificationCodeUser(application *Application, verifyType string, dest s
 		user.EmailVerified = true
 		user.DisplayName = email
 		if organization.UseEmailAsUsername {
-			existedUser, err := GetUser(util.GetId(application.Organization, email))
-			if err != nil {
-				return nil, err
-			}
-			if existedUser == nil {
+			if !HasUserByFieldGlobal("name", email) {
 				user.Name = email
 			}
 		}

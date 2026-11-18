@@ -1177,6 +1177,10 @@ func AddUser(user *User, lang string) (bool, error) {
 		user.Name = util.GetRandomName()
 	}
 
+	if HasUserByFieldGlobal("name", user.Name) {
+		return false, errors.New(i18n.Translate(lang, "check:Username already exists"))
+	}
+
 	organization, err := GetOrganizationByUser(user)
 	if err != nil {
 		return false, err

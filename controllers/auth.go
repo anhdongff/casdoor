@@ -1288,32 +1288,16 @@ func (c *ApiController) Login() {
 
 					userInfo.Email = strings.ToLower(userInfo.Email)
 
-					// an organization must not end up with two users sharing an email or a phone,
-					// the binding rule of the provider decides whether they are the same person
-					if userInfo.Email != "" {
-						var emailUser *object.User
-						emailUser, err = object.GetUserByMultiFields(application.Organization, []string{"secondaryEmail", "email"}, userInfo.Email)
-						if err != nil {
-							c.ResponseError(err.Error())
-							return
-						}
-						if emailUser != nil {
-							c.ResponseError(c.T("check:Email already exists"))
-							return
-						}
+					// email and phone are unique across organizations, the binding rule of the provider
+					// decides whether the account is the same person
+					if userInfo.Email != "" && object.HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, userInfo.Email) {
+						c.ResponseError(c.T("check:Email already exists"))
+						return
 					}
 
-					if userInfo.Phone != "" {
-						var phoneUser *object.User
-						phoneUser, err = object.GetUserByPhoneAndCountryCode(application.Organization, userInfo.Phone, userInfo.CountryCode)
-						if err != nil {
-							c.ResponseError(err.Error())
-							return
-						}
-						if phoneUser != nil {
-							c.ResponseError(c.T("check:Phone already exists"))
-							return
-						}
+					if userInfo.Phone != "" && object.HasUserByPhoneAndCountryCodeGlobal(userInfo.Phone, userInfo.CountryCode) {
+						c.ResponseError(c.T("check:Phone already exists"))
+						return
 					}
 
 					// Handle UseEmailAsUsername for OAuth
@@ -1322,14 +1306,7 @@ func (c *ApiController) Login() {
 					}
 
 					// Handle username conflicts
-					var tmpUser *object.User
-					tmpUser, err = object.GetUser(util.GetId(application.Organization, userInfo.Username))
-					if err != nil {
-						c.ResponseError(err.Error())
-						return
-					}
-
-					if tmpUser != nil {
+					if object.HasUserByFieldGlobal("name", userInfo.Username) {
 						uidStr := strings.Split(util.GenerateUUID(), "-")
 						userInfo.Username = fmt.Sprintf("%s_%s", userInfo.Username, uidStr[1])
 					}
