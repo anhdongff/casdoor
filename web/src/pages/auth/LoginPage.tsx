@@ -42,6 +42,15 @@ import * as UserBackend from "@/backend/UserBackend";
 import * as OrganizationBackend from "@/backend/OrganizationBackend";
 import * as Setting from "@/lib/setting";
 
+// A shared application, or one that lets external users in, accepts a signed-in user of another organization;
+// the backend still decides whether that user may actually use it.
+function isAccountOfApplication(account: any, application: any): boolean {
+  if (account.owner === application.organization) {
+    return true;
+  }
+  return !!application.isShared || (application.externalUsers?.length ?? 0) > 0 || (application.externalGroups?.length ?? 0) > 0;
+}
+
 type LoginType = "login" | "code" | "cas" | "saml" | "device";
 type LoginMethod = "password" | "verificationCode" | "verificationCodeEmail" | "verificationCodePhone" | "ldap" | "webAuthn" | "wechat" | "faceId" | "magicLink" | "device";
 
@@ -1148,7 +1157,7 @@ export default function LoginPage({type = "login", application: applicationProp,
       sendSilentSigninData("user-not-logged-in");
       return;
     }
-    if (!application || account.owner !== application.organization || autoSignedIn.current) {
+    if (!application || !isAccountOfApplication(account, application) || autoSignedIn.current) {
       return;
     }
 
@@ -1171,7 +1180,7 @@ export default function LoginPage({type = "login", application: applicationProp,
       return;
     }
     promptNoneHandled.current = true;
-    if (account === null || account.owner !== application.organization) {
+    if (account === null || !isAccountOfApplication(account, application)) {
       redirectWithOAuthError("login_required");
       return;
     }
@@ -1418,7 +1427,7 @@ export default function LoginPage({type = "login", application: applicationProp,
 
   // Already signed in to this organization: offer the one-click path before the
   // form, which is how an OAuth or device request gets approved.
-  const showSignedInBox = !promptLogin && !!account && account.owner === application.organization;
+  const showSignedInBox = !promptLogin && !!account && isAccountOfApplication(account, application);
 
   // The whole page can be replaced by the application's own markup.
   if (application.signinHtml) {
