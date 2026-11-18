@@ -100,9 +100,9 @@ func recordSigninErrorInfo(user *User, lang string, options ...bool) error {
 	}
 
 	// increase failed login count, and record the lockout time only when first reaching the limit
-	if user.SigninWrongTimes < failedSigninLimit {
+	if user.SigninWrongTimes <= failedSigninLimit {
 		user.SigninWrongTimes++
-		if user.SigninWrongTimes >= failedSigninLimit {
+		if user.SigninWrongTimes > failedSigninLimit {
 			user.LastSigninWrongTime = time.Now().UTC().Format(time.RFC3339)
 		}
 	}
@@ -113,7 +113,7 @@ func recordSigninErrorInfo(user *User, lang string, options ...bool) error {
 		return err
 	}
 
-	leftChances := failedSigninLimit - user.SigninWrongTimes
+	leftChances := failedSigninLimit + 1 - user.SigninWrongTimes
 	if leftChances == 0 && enableCaptcha {
 		return newSigninError(SigninReasonWrongPassword, i18n.Translate(lang, "check:password or code is incorrect"))
 	} else if leftChances >= 0 {

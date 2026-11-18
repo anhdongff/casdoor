@@ -411,7 +411,7 @@ func checkVerifyCodeErrorTimes(user *User, dest, lang string) error {
 		return nil
 	}
 
-	if errorInfo.wrongTimes < failedSigninLimit {
+	if errorInfo.wrongTimes <= failedSigninLimit {
 		return nil
 	}
 
@@ -441,15 +441,15 @@ func recordVerifyCodeErrorInfo(user *User, dest, lang string) error {
 		verifyCodeErrorMap[key] = errorInfo
 	}
 
-	if errorInfo.wrongTimes < failedSigninLimit {
+	if errorInfo.wrongTimes <= failedSigninLimit {
 		errorInfo.wrongTimes++
 	}
 
-	if errorInfo.wrongTimes >= failedSigninLimit {
+	if errorInfo.wrongTimes > failedSigninLimit {
 		errorInfo.lastWrongTime = time.Now().UTC()
 	}
 
-	leftChances := failedSigninLimit - errorInfo.wrongTimes
+	leftChances := failedSigninLimit + 1 - errorInfo.wrongTimes
 	if leftChances >= 0 {
 		return fmt.Errorf(i18n.Translate(lang, "check:password or code is incorrect, you have %s remaining chances"), strconv.Itoa(leftChances))
 	}

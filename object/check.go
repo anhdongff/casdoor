@@ -241,7 +241,7 @@ func checkSigninErrorTimes(user *User, lang string) error {
 		return err
 	}
 
-	if user.SigninWrongTimes >= failedSigninLimit {
+	if user.SigninWrongTimes > failedSigninLimit {
 		lastSignWrongTime, _ := time.Parse(time.RFC3339, user.LastSigninWrongTime)
 		passedTime := time.Now().UTC().Sub(lastSignWrongTime)
 		minutes := failedSigninFrozenTime - int(passedTime.Minutes())
