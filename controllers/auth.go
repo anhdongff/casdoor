@@ -896,6 +896,8 @@ func (c *ApiController) Login() {
 				return
 			}
 
+			authForm.Organization = user.Owner
+
 			verificationCodeType := object.GetVerifyType(authForm.Username)
 			if verificationCodeType == object.VerifyTypeEmail && !application.IsCodeSigninViaEmailEnabled() {
 				c.ResponseError(c.T("auth:The login method: login with email is not enabled for the application"))

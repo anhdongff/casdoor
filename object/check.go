@@ -725,7 +725,7 @@ func CheckApplicationSignin(application *Application, user *User, clientIp strin
 		}
 	}
 	if !user.IsGlobalAdmin() && !user.IsAdmin && len(accessTags) > 0 && !util.HasTagInSlice(accessTags, user.Tag) {
-		return fmt.Errorf(i18n.Translate(lang, "auth:User's tag: %s is not listed in the application's tags"), user.Tag)
+		return fmt.Errorf("%s", i18n.Translate(lang, "auth:This account cannot access this application, please contact your administrator (TAG)"))
 	}
 
 	return nil

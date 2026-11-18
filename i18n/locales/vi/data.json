@@ -45,7 +45,8 @@
     "UserCode Invalid": "Mã người dùng không hợp lệ",
     "paid-user %s does not have active or pending subscription and the application: %s does not have default pricing": "người dùng trả phí %s không có đăng ký đang hoạt động hoặc đang chờ và ứng dụng: %s không có giá mặc định",
     "the application for user %s is not found": "không tìm thấy ứng dụng cho người dùng %s",
-    "the organization: %s is not found": "không tìm thấy tổ chức: %s"
+    "the organization: %s is not found": "không tìm thấy tổ chức: %s",
+    "This account cannot access this application, please contact your administrator (TAG)": "Tài khoản không thể truy cập ứng dụng này, vui lòng liên hệ với quản trị viên của bạn (TAG)"
   },
   "cas": {
     "Service %s and %s do not match": "Dịch sang tiếng Việt: Dịch vụ %s và %s không khớp"

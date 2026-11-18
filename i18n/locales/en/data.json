@@ -45,7 +45,8 @@
     "UserCode Invalid": "UserCode Invalid",
     "paid-user %s does not have active or pending subscription and the application: %s does not have default pricing": "paid-user %s does not have active or pending subscription and the application: %s does not have default pricing",
     "the application for user %s is not found": "the application for user %s is not found",
-    "the organization: %s is not found": "the organization: %s is not found"
+    "the organization: %s is not found": "the organization: %s is not found",
+    "This account cannot access this application, please contact your administrator (TAG)": "This account cannot access this application, please contact your administrator (TAG)"
   },
   "cas": {
     "Service %s and %s do not match": "Service %s and %s do not match"

@@ -159,6 +159,32 @@ func getUserByEmail(owner string, email string) (*object.User, error) {
 	return object.GetUserByEmail(owner, lowered)
 }
 
+// a login or a magic link names no organization: the user is looked up in all the organizations
+// the application serves, the other methods act on the organization of the application
+func getLoginUserByEmails(application *object.Application, method string, email string) (*object.User, error) {
+	if method != LoginVerification && method != MagicLinkVerification {
+		return getUserByEmails(application.Organization, email)
+	}
+
+	user, err := object.GetUserByEmailsForApplication(application, email)
+	if err != nil || user != nil {
+		return user, err
+	}
+
+	lowered := strings.ToLower(email)
+	if lowered == email {
+		return nil, nil
+	}
+	return object.GetUserByEmailsForApplication(application, lowered)
+}
+
+func getLoginUserByPhone(application *object.Application, method string, phone string, countryCode string) (*object.User, error) {
+	if method != LoginVerification {
+		return object.GetUserByPhoneWithCountryCode(application.Organization, phone, countryCode)
+	}
+	return object.GetUserByPhoneWithCountryCodeForApplication(application, phone, countryCode)
+}
+
 func getUserByEmails(owner string, email string) (*object.User, error) {
 	user, err := object.GetUserByEmails(owner, email)
 	if err != nil || user != nil {
@@ -254,6 +280,24 @@ func (c *ApiController) SendVerificationCode() {
 		return
 	}
 
+	// a user of another organization signs in through a shared application as a member of that organization
+	useOrganizationOf := func(user *object.User) bool {
+		if user == nil || user.Owner == organization.Name {
+			return true
+		}
+		userOrganization, err := object.GetOrganization(util.GetId("admin", user.Owner))
+		if err != nil {
+			c.ResponseError(c.T(err.Error()))
+			return false
+		}
+		if userOrganization == nil {
+			c.ResponseError(c.T("check:Organization does not exist"))
+			return false
+		}
+		organization = userOrganization
+		return true
+	}
+
 	var user *object.User
 	// Try to resolve user for CAPTCHA rule checking
 	// checkUser != "", means method is ForgetVerification
@@ -287,7 +331,7 @@ func (c *ApiController) SendVerificationCode() {
 		// For login verification, try to find user by email/phone for CAPTCHA check
 		// This is a preliminary lookup; the actual validation happens later in the switch statement
 		if vform.Type == object.VerifyTypeEmail && util.IsEmailValid(vform.Dest) {
-			user, err = getUserByEmail(organization.Name, vform.Dest)
+			user, err = getLoginUserByEmails(application, vform.Method, vform.Dest)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return
@@ -295,7 +339,7 @@ func (c *ApiController) SendVerificationCode() {
 		} else if vform.Type == object.VerifyTypePhone {
 			// Prefer resolving the user directly by phone, consistent with the later login switch,
 			// so that Dynamic CAPTCHA is not skipped due to missing/invalid country code.
-			user, err = object.GetUserByPhoneWithCountryCode(organization.Name, vform.Dest, vform.CountryCode)
+			user, err = getLoginUserByPhone(application, vform.Method, vform.Dest, vform.CountryCode)
 			if err != nil {
 				c.ResponseError(err.Error())
 				return
@@ -380,9 +424,13 @@ func (c *ApiController) SendVerificationCode() {
 				vform.Dest = user.Email
 			}
 
-			user, err = getUserByEmails(organization.Name, vform.Dest)
+			user, err = getLoginUserByEmails(application, vform.Method, vform.Dest)
 			if err != nil {
 				c.ResponseError(err.Error())
+				return
+			}
+
+			if vform.Method == LoginVerification && !useOrganizationOf(user) {
 				return
 			}
 
@@ -405,9 +453,13 @@ func (c *ApiController) SendVerificationCode() {
 				return
 			}
 
-			user, err = getUserByEmails(organization.Name, vform.Dest)
+			user, err = getLoginUserByEmails(application, vform.Method, vform.Dest)
 			if err != nil {
 				c.ResponseError(err.Error())
+				return
+			}
+
+			if !useOrganizationOf(user) {
 				return
 			}
 
@@ -477,8 +529,10 @@ func (c *ApiController) SendVerificationCode() {
 				vform.Dest = user.Phone
 			}
 
-			if user, err = object.GetUserByPhoneWithCountryCode(organization.Name, vform.Dest, vform.CountryCode); err != nil {
+			if user, err = getLoginUserByPhone(application, vform.Method, vform.Dest, vform.CountryCode); err != nil {
 				c.ResponseError(err.Error())
+				return
+			} else if vform.Method == LoginVerification && !useOrganizationOf(user) {
 				return
 			} else if user == nil && (vform.Method == ForgetVerification || !application.IsVerificationCodeSignupEnabled(object.VerifyTypePhone) && !application.IsCodeSigninSignupEnabled(object.VerifyTypePhone)) {
 				c.ResponseError(c.T("verification:the user does not exist, please sign up first"))

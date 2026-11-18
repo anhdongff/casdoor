@@ -184,7 +184,7 @@ function getUsernameLabel(method: LoginMethod | undefined) {
   case "verificationCodePhone":
     return i18next.t("general:Phone");
   case "ldap":
-    return i18next.t("login:LDAP username, Email or phone");
+    return i18next.t("general:Email");
   default:
     return i18next.t("login:username, Email or phone");
   }

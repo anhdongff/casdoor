@@ -272,14 +272,13 @@ func GetUserByName(organization string, name string) (*User, error) {
 var ErrAmbiguousOrganizationUser = errors.New("the account matches users of more than one organization, please contact your IT support")
 
 // organizationScope is the SQL condition on the "owner" column that limits a look-up to the users who may
-// sign in through the application: its own organization, plus every organization using it as the default
-// application when it is shared. It is a sub-query, so the number of organizations does not matter.
+// sign in through the application: those of its own organization, or of any organization when it is shared
+// (the organizations do not have to name a shared application as their default one).
 func organizationScope(application *Application, column string) (string, []interface{}) {
-	if !application.IsShared {
-		return column + " = ?", []interface{}{application.Organization}
+	if application.IsShared {
+		return "1 = 1", nil
 	}
-	return fmt.Sprintf("(%s = ? OR %s IN (SELECT name FROM organization WHERE default_application = ?))", column, column),
-		[]interface{}{application.Organization, application.Name}
+	return column + " = ?", []interface{}{application.Organization}
 }
 
 func getSingleUserForApplication(application *Application, where string, params ...interface{}) (*User, error) {
@@ -314,6 +313,42 @@ func GetUserByFieldIgnoreCaseForApplication(application *Application, field stri
 	return getSingleUserForApplication(application, fmt.Sprintf("lower(%s)=?", strings.ToLower(field)), strings.ToLower(value))
 }
 
+func GetUserByEmailsForApplication(application *Application, email string) (*User, error) {
+	if email == "" {
+		return nil, nil
+	}
+	return getSingleUserForApplication(application, "email = ? OR secondary_email = ?", email, email)
+}
+
+// GetUserByPhoneWithCountryCodeForApplication is GetUserByPhoneWithCountryCode over the organizations of the application.
+func GetUserByPhoneWithCountryCodeForApplication(application *Application, phone string, countryCode string) (*User, error) {
+	if phone == "" {
+		return nil, nil
+	}
+
+	candidates := []string{phone}
+	if countryCode != "" && !strings.HasPrefix(phone, "+") {
+		if e164, ok := util.GetE164Number(phone, countryCode); ok {
+			candidates = []string{e164, phone}
+		}
+	}
+
+	for _, candidate := range candidates {
+		nationalPhone, regionCode := util.ParseE164Phone(candidate)
+		var user *User
+		var err error
+		if regionCode != "" {
+			user, err = getSingleUserForApplication(application, "phone = ? AND country_code = ?", nationalPhone, regionCode)
+		} else {
+			user, err = getSingleUserForApplication(application, "phone = ?", nationalPhone)
+		}
+		if err != nil || user != nil {
+			return user, err
+		}
+	}
+	return nil, nil
+}
+
 func GetUserByNameForApplication(application *Application, name string) (*User, error) {
 	if conf.GetConfigBool("isUsernameLowered") {
 		name = strings.ToLower(name)
@@ -328,8 +363,8 @@ func GetUserByPhoneAndCountryCodeForApplication(application *Application, phone 
 	return getSingleUserForApplication(application, "phone = ? AND country_code = ?", phone, countryCode)
 }
 
-// GetUserByFieldsForApplication is GetUserByFields for a login that names no organization. Those of the
-// application's organization alone keep the full look-up, otherwise a name, an email or a phone number is matched.
+// GetUserByFieldsForApplication is GetUserByFields for a login that names no organization. An application of one
+// organization keeps the full look-up, a shared one matches a name, an email or a phone number.
 func GetUserByFieldsForApplication(application *Application, field string) (*User, error) {
 	if !application.IsShared {
 		return GetUserByFields(application.Organization, field)
@@ -461,31 +496,7 @@ func GetUserByFieldsForSharedApp(application *Application, organization string, 
 		return getExternalUserByFields(application, field)
 	}
 
-	var orgs []*Organization
-	err = ormer.Engine.Where("default_application = ?", application.Name).Find(&orgs)
-	if err != nil {
-		return nil, err
-	}
-
-	var result *User
-	for _, org := range orgs {
-		if org.Name == organization {
-			continue
-		}
-		user, err = GetUserByFields(org.Name, field)
-		if err != nil {
-			return nil, err
-		}
-		if user == nil {
-			continue
-		}
-		if result != nil {
-			return nil, nil
-		}
-		result = user
-	}
-
-	return result, nil
+	return GetUserByFieldsForApplication(application, field)
 }
 
 // getExternalUserByFields looks up a user of another organization that the application lets sign in.
