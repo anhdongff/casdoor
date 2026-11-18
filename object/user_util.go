@@ -210,6 +210,57 @@ func HasUserByPhoneAndCountryCode(organizationName string, phone string, country
 	return user != nil
 }
 
+// The *Global helpers ignore the organization: identifiers must be unique across all organizations
+// so that a user can be resolved without choosing an organization first.
+func HasUserByFieldGlobal(field string, value string) bool {
+	if field == "" || value == "" || !util.FilterSQLIdentifier(field) {
+		return false
+	}
+	existed, err := ormer.Engine.Where(fmt.Sprintf("%s=?", strings.ToLower(field)), value).Exist(&User{})
+	if err != nil {
+		panic(err)
+	}
+	return existed
+}
+
+func HasUserByMultiFieldsGlobal(fields []string, value string) bool {
+	if len(fields) == 0 || value == "" {
+		return false
+	}
+	conditions := []string{}
+	params := []interface{}{}
+	for _, field := range fields {
+		field = strings.TrimSpace(field)
+		if field == "" {
+			continue
+		}
+		if !util.FilterSQLIdentifier(field) {
+			return false
+		}
+		conditions = append(conditions, fmt.Sprintf("%s = ?", strings.ToLower(util.CamelToSnakeCase(field))))
+		params = append(params, value)
+	}
+	if len(conditions) == 0 {
+		return false
+	}
+	existed, err := ormer.Engine.Where(fmt.Sprintf("(%s)", strings.Join(conditions, " OR ")), params...).Exist(&User{})
+	if err != nil {
+		panic(err)
+	}
+	return existed
+}
+
+func HasUserByPhoneAndCountryCodeGlobal(phone string, countryCode string) bool {
+	if phone == "" {
+		return false
+	}
+	existed, err := ormer.Engine.Where("phone = ? AND country_code = ?", phone, countryCode).Exist(&User{})
+	if err != nil {
+		panic(err)
+	}
+	return existed
+}
+
 func GetUserByName(organization string, name string) (*User, error) {
 	if conf.GetConfigBool("isUsernameLowered") {
 		name = strings.ToLower(name)
@@ -331,6 +382,7 @@ func GetUserByFieldsForSharedApp(application *Application, organization string, 
 		return nil, err
 	}
 
+	var result *User
 	for _, org := range orgs {
 		if org.Name == organization {
 			continue
@@ -339,12 +391,16 @@ func GetUserByFieldsForSharedApp(application *Application, organization string, 
 		if err != nil {
 			return nil, err
 		}
-		if user != nil {
-			return user, nil
+		if user == nil {
+			continue
 		}
+		if result != nil {
+			return nil, nil
+		}
+		result = user
 	}
 
-	return nil, nil
+	return result, nil
 }
 
 // getExternalUserByFields looks up a user of another organization that the application lets sign in.

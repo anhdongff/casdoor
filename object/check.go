@@ -68,22 +68,22 @@ func CheckUserSignup(application *Application, organization *Organization, authF
 			return msg
 		}
 
-		if HasUserByField(organization.Name, "name", authForm.Username) {
+		if HasUserByFieldGlobal("name", authForm.Username) {
 			return i18n.Translate(lang, "check:Username already exists")
 		}
 		if authForm.Email != "" {
 			normalizedEmail := strings.ToLower(authForm.Email)
-			if HasUserByMultiFields(organization.Name, []string{"secondaryEmail", "email"}, normalizedEmail) {
+			if HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, normalizedEmail) {
 				return i18n.Translate(lang, "check:Email already exists")
 			}
 		}
 		if authForm.SecondaryEmail != "" {
 			normalizedSecondaryEmail := strings.ToLower(authForm.SecondaryEmail)
-			if HasUserByMultiFields(organization.Name, []string{"secondaryEmail", "email"}, normalizedSecondaryEmail) || authForm.SecondaryEmail == authForm.Email {
+			if HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, normalizedSecondaryEmail) || authForm.SecondaryEmail == authForm.Email {
 				return i18n.Translate(lang, "check:SecondaryEmail already exists")
 			}
 		}
-		if HasUserByPhoneAndCountryCode(organization.Name, authForm.Phone, authForm.CountryCode) {
+		if HasUserByPhoneAndCountryCodeGlobal(authForm.Phone, authForm.CountryCode) {
 			return i18n.Translate(lang, "check:Phone already exists")
 		}
 	}
@@ -102,7 +102,7 @@ func CheckUserSignup(application *Application, organization *Organization, authF
 			}
 		} else {
 			normalizedEmail := strings.ToLower(authForm.Email)
-			if HasUserByField(organization.Name, "email", normalizedEmail) {
+			if HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, normalizedEmail) {
 				return i18n.Translate(lang, "check:Email already exists")
 			} else if !util.IsEmailValid(authForm.Email) {
 				return i18n.Translate(lang, "check:Email is invalid")
@@ -116,7 +116,7 @@ func CheckUserSignup(application *Application, organization *Organization, authF
 				return i18n.Translate(lang, "check:Phone cannot be empty")
 			}
 		} else {
-			if HasUserByPhoneAndCountryCode(organization.Name, authForm.Phone, authForm.CountryCode) {
+			if HasUserByPhoneAndCountryCodeGlobal(authForm.Phone, authForm.CountryCode) {
 				return i18n.Translate(lang, "check:Phone already exists")
 			} else if !util.IsPhoneAllowInRegin(authForm.CountryCode, organization.CountryCodes) {
 				return i18n.Translate(lang, "check:Your region is not allow to signup by phone")
@@ -950,17 +950,17 @@ func CheckUpdateUser(oldUser, user *User, lang string) string {
 			}
 		}
 
-		if HasUserByField(user.Owner, "name", user.Name) {
+		if HasUserByFieldGlobal("name", user.Name) {
 			return i18n.Translate(lang, "check:Username already exists")
 		}
 	}
 	if oldUser.Email != user.Email {
-		if HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, user.Email) {
+		if HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, user.Email) {
 			return i18n.Translate(lang, "check:Email already exists")
 		}
 	}
 	if oldUser.SecondaryEmail != user.SecondaryEmail {
-		if HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, user.SecondaryEmail) {
+		if HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, user.SecondaryEmail) {
 			return i18n.Translate(lang, "check:SecondaryEmail already exists")
 		}
 	}
@@ -980,7 +980,7 @@ func CheckUpdateUser(oldUser, user *User, lang string) string {
 
 		// The normalization may have turned the new phone number into the old one
 		if oldUser.Phone != user.Phone || oldUser.CountryCode != user.CountryCode {
-			if HasUserByPhoneAndCountryCode(user.Owner, user.Phone, user.CountryCode) {
+			if HasUserByPhoneAndCountryCodeGlobal(user.Phone, user.CountryCode) {
 				return i18n.Translate(lang, "check:Phone already exists")
 			}
 		}

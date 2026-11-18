@@ -365,7 +365,7 @@ func (c *ApiController) SendVerificationCode() {
 			return
 		}
 
-		if vform.Method == SignupVerification && object.HasUserByMultiFields(organization.Name, []string{"secondaryEmail", "email"}, strings.ToLower(vform.Dest)) {
+		if vform.Method == SignupVerification && object.HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, strings.ToLower(vform.Dest)) {
 			c.ResponseError(c.T("check:Email already exists"))
 			return
 		}
@@ -466,7 +466,7 @@ func (c *ApiController) SendVerificationCode() {
 	case object.VerifyTypePhone:
 		if vform.Method == SignupVerification {
 			phone, countryCode, _ := util.GetNormalizedPhone(vform.Dest, vform.CountryCode)
-			if object.HasUserByPhoneAndCountryCode(organization.Name, phone, countryCode) {
+			if object.HasUserByPhoneAndCountryCodeGlobal(phone, countryCode) {
 				c.ResponseError(c.T("check:Phone already exists"))
 				return
 			}
@@ -662,7 +662,7 @@ func (c *ApiController) ResetEmailOrPhone() {
 
 		dest, countryCode = normalizedPhone, normalizedCountryCode
 
-		if object.HasUserByPhoneAndCountryCode(user.Owner, dest, countryCode) {
+		if object.HasUserByPhoneAndCountryCodeGlobal(dest, countryCode) {
 			c.ResponseError(c.T("check:Phone already exists"))
 			return
 		}
@@ -682,7 +682,7 @@ func (c *ApiController) ResetEmailOrPhone() {
 			return
 		}
 	} else if destType == object.VerifyTypeEmail {
-		if object.HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, dest) {
+		if object.HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, dest) {
 			c.ResponseError(c.T("check:Email already exists"))
 			return
 		}
@@ -698,7 +698,7 @@ func (c *ApiController) ResetEmailOrPhone() {
 			return
 		}
 	} else if destType == object.VerifyTypeSecondaryEmail {
-		if object.HasUserByMultiFields(user.Owner, []string{"secondaryEmail", "email"}, dest) {
+		if object.HasUserByMultiFieldsGlobal([]string{"secondaryEmail", "email"}, dest) {
 			c.ResponseError(c.T("check:Email already exists"))
 			return
 		}
