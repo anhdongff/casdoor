@@ -16,7 +16,11 @@
 
 package object
 
-import "github.com/casdoor/casdoor/email"
+import (
+	"strings"
+
+	"github.com/casdoor/casdoor/email"
+)
 
 // TestSmtpServer Test the SMTP server
 func TestSmtpServer(provider *Provider) error {
@@ -24,8 +28,9 @@ func TestSmtpServer(provider *Provider) error {
 		return err
 	}
 
+	disableTsl := strings.Contains(provider.Name, "disable_tls") || strings.Contains(provider.Name, "disable-tls")
 	sslMode := getSslMode(provider)
-	smtpEmailProvider := email.NewSmtpEmailProvider(provider.ClientId, provider.ClientSecret, provider.Host, provider.Port, provider.Type, sslMode, provider.EnableProxy)
+	smtpEmailProvider := email.NewSmtpEmailProvider(provider.ClientId, provider.ClientSecret, provider.Host, provider.Port, provider.Type, sslMode, provider.EnableProxy, !disableTsl)
 	sender, err := smtpEmailProvider.Dialer.Dial()
 	if err != nil {
 		return err
@@ -42,8 +47,9 @@ func SendEmail(provider *Provider, title string, content string, dest []string, 
 		}
 	}
 
+	disableTsl := strings.Contains(provider.Name, "disable_tls") || strings.Contains(provider.Name, "disable-tls")
 	sslMode := getSslMode(provider)
-	emailProvider := email.GetEmailProvider(provider.Type, provider.ClientId, provider.ClientSecret, provider.Host, provider.Port, sslMode, provider.Endpoint, provider.Method, provider.HttpHeaders, provider.UserMapping, provider.IssuerUrl, provider.EnableProxy)
+	emailProvider := email.GetEmailProvider(provider.Type, provider.ClientId, provider.ClientSecret, provider.Host, provider.Port, sslMode, provider.Endpoint, provider.Method, provider.HttpHeaders, provider.UserMapping, provider.IssuerUrl, provider.EnableProxy, !disableTsl)
 	restrictTenantEmailProvider(provider, emailProvider)
 
 	fromAddress := provider.ClientId2

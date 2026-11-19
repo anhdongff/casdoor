@@ -25,9 +25,9 @@ type SmtpEmailProvider struct {
 	Dialer *gomail.Dialer
 }
 
-func NewSmtpEmailProvider(userName string, password string, host string, port int, typ string, sslMode string, enableProxy bool) *SmtpEmailProvider {
+func NewSmtpEmailProvider(userName string, password string, host string, port int, typ string, sslMode string, enableProxy bool, enableTsl bool) *SmtpEmailProvider {
 	dialer := gomail.NewDialer(host, port, userName, password)
-	if typ == "SUBMAIL" {
+	if typ == "SUBMAIL" || !enableTsl {
 		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
