@@ -1676,7 +1676,8 @@
     "UserInfo URL": "UserInfo URL",
     "UserInfo URL - Tooltip": "Custom OAuth UserInfo URL",
     "Web": "Web",
-    "admin (Shared)": "admin (Shared)"
+    "admin (Shared)": "admin (Shared)",
+    "Provider name rules": "The provider name must be unique. If a provider includes an 'Notifications' category and its name contains the string 'sso-logout' or 'sso_logout', it will be invoked during a call to /api/sso-logout to log the user out from that provider. If a provider includes an 'Email' category of the 'Default' type and its name contains the string 'disable_tls' or 'disable-tls', TLS will be disabled when sending emails"
   },
   "radiusClient": {
     "Bound organization": "Bound organization",
