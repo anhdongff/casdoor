@@ -1675,7 +1675,7 @@
     "UserInfo URL - Tooltip": "Địa chỉ URL của Thông tin người dùng",
     "Web": "Giao diện web",
     "admin (Shared)": "quản trị viên (Chung)",
-    "Provider name rules": "Tên nhà cung cấp phải là duy nhất. Nếu provider có danh mục Thông báo, nếu tên của nó chứa chuỗi'sso-logout' hoặc 'sso_logout, khi gọi đến /api/sso-logout, nó sẽ được gọi để đăng xuất người dùng khỏi nhà cung cấp này. Nếu provider có danh mục Email, loại Default, nếu tên của nó chứa chuỗi 'disable_tls' hoặc 'disable-tls', khi gửi email, nó sẽ tắt TLS"
+    "Provider name rules": "Tên nhà cung cấp phải là duy nhất. Nếu provider có danh mục Thông báo, nếu tên của nó chứa chuỗi 'sso-logout' hoặc 'sso_logout, khi gọi đến /api/sso-logout, nó sẽ được gọi để đăng xuất người dùng khỏi nhà cung cấp này. Nếu provider có danh mục Email, loại Default, nếu tên của nó chứa chuỗi 'disable_tls' hoặc 'disable-tls', khi gửi email, nó sẽ tắt TLS"
   },
   "radiusClient": {
     "Bound organization": "Tổ chức ràng buộc",

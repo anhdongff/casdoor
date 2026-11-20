@@ -1719,7 +1719,7 @@ export default function ProviderEditPage() {
       saving={saving}
       onSave={save}
     >
-      <FormRow labelKey="general:Name" tooltip={i18next.t("provider:Name - Tooltip")}>
+      <FormRow labelKey="general:Name" tooltip={i18next.t("provider:Provider name rules")}>
         <Input
           value={provider.name ?? ""}
           onChange={(e) => {
@@ -1798,7 +1798,7 @@ export default function ProviderEditPage() {
           </FormRow>
           {provider.type === "WeCom" ? (
             <React.Fragment>
-              <FormRow label={i18next.t("general:Method")} tooltip={i18next.t("provider:Provider name rules")}>
+              <FormRow label={i18next.t("general:Method")} tooltip={i18next.t("provider:Method - Tooltip")}>
                 <SelectField
                   value={provider.method}
                   onChange={(v) => updateProviderField("method", v)}
