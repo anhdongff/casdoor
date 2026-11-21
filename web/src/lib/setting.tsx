@@ -748,7 +748,7 @@ export const UserFields = ["owner", "name", "password", "display_name", "id", "t
   "invitation_code", "face_ids", "ldap", "properties", "roles", "permissions", "groups", "last_change_password_time",
   "last_signin_wrong_time", "signin_wrong_times", "managedAccounts", "mfaAccounts", "mfaItems", "need_update_password",
   "created_time", "updated_time", "deleted_time",
-  "ip_whitelist"];
+  "ip_whitelist", "ldap"];
 
 export const GroupFields = ["owner", "name", "created_time", "updated_time", "display_name", "manager",
   "contact_email", "type", "parent_id", "is_top_group", "is_enabled"];
@@ -830,6 +830,7 @@ export const GetTranslatedUserItems = () => {
     {name: "Face ID", label: i18next.t("login:Face ID")},
     {name: "MFA accounts", label: i18next.t("user:MFA accounts")},
     {name: "MFA items", label: i18next.t("general:MFA items")},
+    {name: "LDAP", label: i18next.t("general:LDAP")},
   ];
 };
 

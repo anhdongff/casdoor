@@ -823,7 +823,9 @@
     "You can only select one physical group": "You can only select one physical group",
     "You must select a picture first": "You must select a picture first",
     "empty": "empty",
-    "remove": "remove"
+    "remove": "remove",
+    "LDAP - Tooltip": "LDAP username in LDAP server, e.g., abc in abc@example.com",
+    "LDAP": "LDAP username"
   },
   "group": {
     "Edit Group": "Edit Group",

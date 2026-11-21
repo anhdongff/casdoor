@@ -123,6 +123,7 @@ func GetDefaultAccountItems() []*AccountItem {
 		{Name: "MFA accounts", Visible: true, ViewRule: "Self", ModifyRule: "Self"},
 		{Name: "Need update password", Visible: true, ViewRule: "Admin", ModifyRule: "Admin"},
 		{Name: "IP whitelist", Visible: true, ViewRule: "Admin", ModifyRule: "Admin"},
+		{Name: "LDAP", Visible: true, ViewRule: "Admin", ModifyRule: "Admin"},
 	}
 }
 

@@ -66,6 +66,7 @@ export function newOrganization(createdTime: string) {
       {name: "Homepage", visible: true, viewRule: "Public", modifyRule: "Self"},
       {name: "Bio", visible: true, viewRule: "Public", modifyRule: "Self"},
       {name: "Tag", visible: true, viewRule: "Public", modifyRule: "Admin"},
+      {name: "LDAP", visible: true, viewRule: "Admin", modifyRule: "Admin"},
       {name: "Language", visible: true, viewRule: "Public", modifyRule: "Admin"},
       {name: "Gender", visible: true, viewRule: "Public", modifyRule: "Admin"},
       {name: "Birthday", visible: true, viewRule: "Public", modifyRule: "Admin"},
@@ -104,6 +105,7 @@ export function newOrganization(createdTime: string) {
       {name: "MFA accounts", visible: true, viewRule: "Self", modifyRule: "Self"},
       {name: "Need update password", visible: true, viewRule: "Admin", modifyRule: "Admin"},
       {name: "IP whitelist", visible: true, viewRule: "Admin", modifyRule: "Admin"},
+
     ],
   };
 }

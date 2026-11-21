@@ -405,6 +405,11 @@ export default function UserEditPage({ self }: { self?: boolean } = {}) {
         )}
       </AccountItemRow>
     ),
+    "LDAP": (
+      <AccountItemRow name="LDAP" labelKey="general:LDAP">
+        <Input value={user.ldap ?? ""} onChange={(e) => updateField("ldap", e.target.value)} />
+      </AccountItemRow>
+    ),
     "Signup application": (
       <AccountItemRow name="Signup application" labelKey="general:Signup application">
         <SearchableSelect

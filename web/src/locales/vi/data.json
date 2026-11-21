@@ -823,7 +823,9 @@
     "You can only select one physical group": "Bạn chỉ có thể chọn một nhóm vật lý",
     "You must select a picture first": "Bạn phải chọn một hình ảnh trước",
     "empty": "trống",
-    "remove": "xóa"
+    "remove": "xóa",
+    "LDAP - Tooltip": "Tên người dùng trong máy chủ LDAP, ví dụ: abc trong abc@example.com",
+    "LDAP": "Tên người dùng LDAP"
   },
   "group": {
     "Edit Group": "Chỉnh sửa nhóm",

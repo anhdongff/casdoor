@@ -67,7 +67,6 @@ export default function UserListPage({
       dataIndex: "signupApplication",
       title: i18next.t("general:Application"),
       width: 140,
-      fixed: "left",
       sortable: true,
       searchable: true,
       render: (value, record) =>
