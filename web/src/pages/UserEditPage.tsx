@@ -392,16 +392,27 @@ export default function UserEditPage({ self }: { self?: boolean } = {}) {
         {/* an organization that lists its tags picks from them; the second
               token of "<name>|<zh name>" is the label shown in Chinese */}
         {(userOrganization?.tags?.length ?? 0) > 0 ? (
-          <SearchableSelect
-            value={user.tag ?? ""}
-            onChange={(v) => updateField("tag", v)}
+          <MultiSelect
+            value={typeof user.tag === "string"
+              ? user.tag.split(",").map((tag: string) => tag.trim()).filter((tag: string) => tag !== "")
+              : []}
+            onChange={(v) => updateField("tag", v.map((tag) => tag.trim()).filter((tag) => tag !== "").join(","))}
             options={(userOrganization.tags as string[]).map((tag) => {
               const tokens = tag.split("|");
-              return { value: tokens[0], label: Setting.getLanguage() !== "zh" ? tokens[0] : tokens[1] };
+              return {value: tokens[0], label: Setting.getLanguage() !== "zh" ? tokens[0] : (tokens[1] ?? tokens[0])};
             })}
           />
         ) : (
-          <Input value={user.tag ?? ""} onChange={(e) => updateField("tag", e.target.value)} />
+          <MultiSelect
+            creatable
+            value={typeof user.tag === "string"
+              ? user.tag.split(",").map((tag: string) => tag.trim()).filter((tag: string) => tag !== "")
+              : []}
+            onChange={(v) => updateField("tag", v.map((tag) => tag.trim()).filter((tag) => tag !== "").join(","))}
+            options={typeof user.tag === "string"
+              ? user.tag.split(",").map((tag: string) => tag.trim()).filter((tag: string) => tag !== "").map((tag: string) => ({value: tag, label: tag}))
+              : []}
+          />
         )}
       </AccountItemRow>
     ),

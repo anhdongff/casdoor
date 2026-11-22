@@ -97,7 +97,7 @@ type User struct {
 	IsVerified             bool       `json:"isVerified"`
 	Homepage               string     `xorm:"varchar(100)" json:"homepage"`
 	Bio                    string     `xorm:"varchar(100)" json:"bio"`
-	Tag                    string     `xorm:"varchar(100)" json:"tag"`
+	Tag                    string     `xorm:"text" json:"tag"`
 	Language               string     `xorm:"varchar(100)" json:"language"`
 	Gender                 string     `xorm:"varchar(100)" json:"gender"`
 	Birthday               string     `xorm:"varchar(100)" json:"birthday"`
