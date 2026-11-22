@@ -213,7 +213,9 @@
     "Use Email as NameID - Tooltip": "Use Email as NameID",
     "Used for": "Used for",
     "Vertical": "Vertical",
-    "You are unexpected to see this prompt page": "You are unexpected to see this prompt page"
+    "You are unexpected to see this prompt page": "You are unexpected to see this prompt page",
+    "Internal mail domains": "Internal mail domains",
+    "Internal mail domains - Tooltip": "The email addresses with internal domain names listed here will be prioritized to receive emails from internal email providers (e.g., All - Internal) listed in this application"
   },
   "cert": {
     "Access secret": "Access secret",

@@ -213,7 +213,9 @@
     "Use Email as NameID - Tooltip": "Gợi ý sử dụng Email làm NameID",
     "Used for": "Dùng cho",
     "Vertical": "Dọc",
-    "You are unexpected to see this prompt page": "Bạn không mong đợi thấy trang này hiện lên"
+    "You are unexpected to see this prompt page": "Bạn không mong đợi thấy trang này hiện lên",
+    "Internal mail domains": "Tên miền email nội bộ",
+    "Internal mail domains - Tooltip": "Các địa chỉ email với những tên miền nội bộ được liệt kê ở đây sẽ được ưu tiên nhận email từ các nhà cung cấp email với quy tắc nội bộ (ví dụ: All - Internal) được liệt kê trong ứng dụng này"
   },
   "cert": {
     "Access secret": "Bí mật truy cập",

@@ -154,6 +154,7 @@ type Application struct {
 	ExternalUsers                []string        `xorm:"mediumtext" json:"externalUsers"`
 	ExternalGroups               []string        `xorm:"mediumtext" json:"externalGroups"`
 	IpRestriction                string          `json:"ipRestriction"`
+	InternalMailDomains          string          `xorm:"text" json:"internalMailDomains"`
 
 	ClientId                string                 `xorm:"varchar(100)" json:"clientId"`
 	ClientSecret            string                 `xorm:"varchar(100)" json:"clientSecret"`

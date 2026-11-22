@@ -1,13 +1,13 @@
 
 import i18next from "i18next";
-import {Input} from "@/components/ui/input";
-import {Switch} from "@/components/ui/switch";
-import {MultiSelect} from "@/components/common/MultiSelect";
-import {SelectField} from "@/components/common/SelectField";
-import type {SearchableOption} from "@/components/common/SearchableSelect";
-import {EditableTable} from "@/components/crud/EditableTable";
-import {FormRow} from "@/components/crud/FormRow";
-import type {ApplicationTabProps} from "@/components/application/types";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { MultiSelect } from "@/components/common/MultiSelect";
+import { SelectField } from "@/components/common/SelectField";
+import type { SearchableOption } from "@/components/common/SearchableSelect";
+import { EditableTable } from "@/components/crud/EditableTable";
+import { FormRow } from "@/components/crud/FormRow";
+import type { ApplicationTabProps } from "@/components/application/types";
 import {
   enumLabel,
   enumOptions,
@@ -23,7 +23,7 @@ import * as Setting from "@/lib/setting";
 const LINKABLE_PROVIDER_CATEGORIES = ["OAuth", "SAML"];
 
 /** the methods an Email or SMS provider row can be picked for, "All" being the absence of one */
-const CODE_PROVIDER_METHODS = Object.keys(PROVIDER_CODE_RULES).filter((rule) => rule !== "all");
+const CODE_PROVIDER_METHODS = Object.keys(PROVIDER_CODE_RULES).filter((rule) => rule !== "all" && rule !== "allInternal");
 
 /** The rule options a provider row offers, or null when it has no rule at all. */
 function getProviderRuleMap(provider: any) {
@@ -67,7 +67,7 @@ function outranksCountryCodes(row: any, other: any, category: string) {
 
   const codesOf = (item: any) => (item?.countryCodes?.length ? item.countryCodes : ["All"]);
   const codes = codesOf(row);
-  if (codes.some((code: string) => code === "" || code === "All" || code === "all")) {
+  if (codes.some((code: string) => code === "" || code === "All" || code === "all" || code === "allInternal")) {
     return true;
   }
 
@@ -90,15 +90,15 @@ function getCodeProviderCoverage(rows: any[], index: number, categoryOf: (row: a
   const outranks = (other: any) => categoryOf(other) === category && outranksCountryCodes(other, row, category);
 
   if (rows.some((other, i) => i < index && getCodeProviderRule(other) === rule && outranks(other))) {
-    return {methods: [], shadowed: true};
+    return { methods: [], shadowed: true };
   }
 
-  if (rule !== "all") {
-    return {methods: [rule], shadowed: false};
+  if (rule !== "all" && rule !== "allInternal") {
+    return { methods: [rule], shadowed: false };
   }
 
   const named = new Set(rows.filter(outranks).map(getCodeProviderRule));
-  return {methods: CODE_PROVIDER_METHODS.filter((method) => !named.has(method)), shadowed: false};
+  return { methods: CODE_PROVIDER_METHODS.filter((method) => !named.has(method)), shadowed: false };
 }
 
 interface ApplicationProvidersTabProps extends ApplicationTabProps {
@@ -121,6 +121,18 @@ export function ApplicationProvidersTab({
     row?.provider ?? providerObjs.find((item: any) => item.name === row?.name);
   return (
     <>
+      <FormRow labelKey="application:Internal mail domains" block>
+        <MultiSelect
+          creatable
+          value={typeof application.internalMailDomains === "string"
+            ? application.internalMailDomains.split(",").map((domain: string) => domain.trim()).filter((domain: string) => domain !== "")
+            : []}
+          onChange={(v) => updateField("internalMailDomains", v.map((domain) => domain.trim()).filter((domain) => domain !== "").join(","))}
+          options={typeof application.internalMailDomains === "string"
+            ? application.internalMailDomains.split(",").map((domain: string) => domain.trim()).filter((domain: string) => domain !== "").map((domain: string) => ({ value: domain, label: domain }))
+            : []}
+        />
+      </FormRow>
       <FormRow labelKey="application:Providers" block>
         <EditableTable
           rows={application.providers ?? []}
@@ -156,12 +168,12 @@ export function ApplicationProvidersTab({
                       // the row carries its provider, which would otherwise still be the previous one
                       const provider = providerObjs.find((item: any) => item.name === v);
                       patch(provider?.category === "Email" || provider?.category === "SMS"
-                        ? {name: v, provider, rule: "all"}
-                        : {name: v, provider});
+                        ? { name: v, provider, rule: "all" }
+                        : { name: v, provider });
                     }}
                     options={providers
                       .filter((option) => !taken.has(option.value))
-                      .map((option) => ({id: option.value, name: option.label as string}))}
+                      .map((option) => ({ id: option.value, name: option.label as string }))}
                   />
                 );
               },
@@ -172,7 +184,7 @@ export function ApplicationProvidersTab({
               width: 110,
               render: (row: any, _i, patch) =>
                 LINKABLE_PROVIDER_CATEGORIES.includes(resolveProvider(row)?.category) ? (
-                  <Switch checked={!!row.canSignUp} onCheckedChange={(v) => patch({canSignUp: v})} />
+                  <Switch checked={!!row.canSignUp} onCheckedChange={(v) => patch({ canSignUp: v })} />
                 ) : null,
             },
             {
@@ -181,7 +193,7 @@ export function ApplicationProvidersTab({
               width: 110,
               render: (row: any, _i, patch) =>
                 LINKABLE_PROVIDER_CATEGORIES.includes(resolveProvider(row)?.category) ? (
-                  <Switch checked={!!row.canSignIn} onCheckedChange={(v) => patch({canSignIn: v})} />
+                  <Switch checked={!!row.canSignIn} onCheckedChange={(v) => patch({ canSignIn: v })} />
                 ) : null,
             },
             {
@@ -190,7 +202,7 @@ export function ApplicationProvidersTab({
               width: 110,
               render: (row: any, _i, patch) =>
                 LINKABLE_PROVIDER_CATEGORIES.includes(resolveProvider(row)?.category) ? (
-                  <Switch checked={!!row.canUnlink} onCheckedChange={(v) => patch({canUnlink: v})} />
+                  <Switch checked={!!row.canUnlink} onCheckedChange={(v) => patch({ canUnlink: v })} />
                 ) : null,
             },
             {
@@ -200,7 +212,7 @@ export function ApplicationProvidersTab({
               // only an identity provider can prompt for a link
               render: (row: any, _i, patch) =>
                 LINKABLE_PROVIDER_CATEGORIES.includes(resolveProvider(row)?.category) ? (
-                  <Switch checked={!!row.prompted} onCheckedChange={(v) => patch({prompted: v})} />
+                  <Switch checked={!!row.prompted} onCheckedChange={(v) => patch({ prompted: v })} />
                 ) : null,
             },
             {
@@ -239,9 +251,9 @@ export function ApplicationProvidersTab({
                 resolveProvider(row)?.category === "SMS" ? (
                   <MultiSelect
                     value={row.countryCodes ?? ["All"]}
-                    onChange={(v) => patch({countryCodes: v})}
+                    onChange={(v) => patch({ countryCodes: v })}
                     options={[
-                      {value: "All", label: i18next.t("general:All")},
+                      { value: "All", label: i18next.t("general:All") },
                       ...Setting.getCountryCodeData(application.organizationObj?.countryCodes).map((country: any) => ({
                         value: country.code,
                         label: `${country.name} (+${country.phone})`,
@@ -259,7 +271,7 @@ export function ApplicationProvidersTab({
                 LINKABLE_PROVIDER_CATEGORIES.includes(resolveProvider(row)?.category) ? (
                   <MultiSelect
                     value={row.bindingRule ?? ["Email", "Phone"]}
-                    onChange={(v) => patch({bindingRule: v})}
+                    onChange={(v) => patch({ bindingRule: v })}
                     options={enumOptions(PROVIDER_BINDING_RULES)}
                   />
                 ) : null,
@@ -270,7 +282,7 @@ export function ApplicationProvidersTab({
               width: 150,
               render: (row: any, _i, patch) =>
                 resolveProvider(row)?.category === "OAuth" ? (
-                  <Input value={row.signupGroup ?? ""} onChange={(e) => patch({signupGroup: e.target.value})} />
+                  <Input value={row.signupGroup ?? ""} onChange={(e) => patch({ signupGroup: e.target.value })} />
                 ) : null,
             },
             {
@@ -286,7 +298,7 @@ export function ApplicationProvidersTab({
                 return (
                   <SelectField
                     value={normalizeProviderRule(resolveProvider(row), row.rule)}
-                    onChange={(v) => patch({rule: v})}
+                    onChange={(v) => patch({ rule: v })}
                     options={enumSelectOptions(map)}
                   />
                 );

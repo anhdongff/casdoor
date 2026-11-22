@@ -492,7 +492,17 @@ func (c *ApiController) SendVerificationCode() {
 			}
 		}
 
-		provider, err = application.GetEmailProvider(vform.Method)
+		// check if the email is in the internal mail domains list, if so, use the internal email provider
+		if application.InternalMailDomains != "" && strings.Contains(application.InternalMailDomains, strings.SplitN(vform.Dest, "@", 2)[1]) {
+			provider, err = application.GetProviderByCategoryAndRule("Email", "allInternal", "All")
+			if err != nil {
+				c.ResponseError(err.Error())
+				return
+			}
+		}
+		if provider == nil {
+			provider, err = application.GetEmailProvider(vform.Method)
+		}
 		if err != nil {
 			c.ResponseError(err.Error())
 			return

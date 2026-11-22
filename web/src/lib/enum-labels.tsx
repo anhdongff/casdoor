@@ -126,6 +126,7 @@ export const PROVIDER_GOOGLE_RULES: EnumMap = {
 
 export const PROVIDER_CODE_RULES: EnumMap = {
   "all": {i18nKey: "All"},
+  "allInternal": {i18nKey: "All Internal"},
   "signup": {i18nKey: "Signup"},
   "login": {i18nKey: "Login"},
   "forget": {i18nKey: "Forget Password"},
