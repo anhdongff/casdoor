@@ -272,11 +272,9 @@ func CheckPassword(user *User, password string, lang string, options ...bool) er
 	}
 
 	// check the login error times
-	if !enableCaptcha {
-		err := checkSigninErrorTimes(user, lang)
-		if err != nil {
-			return err
-		}
+	err := checkSigninErrorTimes(user, lang)
+	if err != nil {
+		return err
 	}
 
 	organization, err := GetOrganizationByUser(user)
@@ -348,12 +346,9 @@ func CheckLdapUserPassword(user *User, password string, lang string, options ...
 		enableCaptcha = options[0]
 	}
 
-	// check the login error times
-	if !enableCaptcha {
-		err := checkSigninErrorTimes(user, lang)
-		if err != nil {
-			return err
-		}
+	err := checkSigninErrorTimes(user, lang)
+	if err != nil {
+		return err
 	}
 
 	ldaps, err := GetLdaps(user.Owner)
@@ -1048,7 +1043,13 @@ func CheckToEnableCaptcha(application *Application, organization, username strin
 		return util.IsInternetIp(clientIp), nil
 	}
 
-	user, err := GetUserByFields(organization, username)
+	var user *User
+	var err error
+	if application.IsShared {
+		user, err = GetUserByFieldsForApplication(application, username)
+	} else {
+		user, err = GetUserByFields(organization, username)
+	}
 	if err != nil {
 		return false, err
 	}
