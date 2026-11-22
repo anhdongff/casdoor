@@ -17,7 +17,6 @@ package object
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -268,16 +267,14 @@ func SendSsoLogoutNotificationsToAllAllowedApplications(user *User, sessionIds [
 
 			provider := providerItem.Provider
 			if provider == nil {
-				provider, err = GetProvider("admin/" + providerItem.Name)
+				provider, err = getProvider("", providerItem.Name)
 			}
 
 			if provider.Category != "Notification" {
 				continue
 			}
 
-			if err := SendNotification(provider, content, ""); err != nil {
-				sendErr = errors.Join(sendErr, fmt.Errorf("failed to send SSO logout notification to provider %s/%s: %w", provider.Owner, provider.Name, err))
-			}
+			SendNotification(provider, content, "")
 		}
 	}
 

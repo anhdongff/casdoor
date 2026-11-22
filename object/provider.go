@@ -244,7 +244,7 @@ func GetPaginationGlobalProviders(offset, limit int, field, value, sortField, so
 }
 
 func getProvider(owner string, name string) (*Provider, error) {
-	if owner == "" || name == "" {
+	if name == "" {
 		return nil, nil
 	}
 
