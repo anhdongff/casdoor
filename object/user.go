@@ -1271,6 +1271,11 @@ func AddUser(user *User, lang string) (bool, error) {
 		user.Name = strings.ToLower(user.Name)
 	}
 
+	// Add the tag of the organization to the user if it is not already present
+	if len(organization.Tags) > 0 && user.Tag == "" {
+		user.Tag = strings.Join(organization.Tags, ",")
+	}
+
 	affected, err := ormer.Engine.Insert(user)
 	if err != nil {
 		return false, err

@@ -644,7 +644,6 @@ export function newUser(account: Account, organization: Record<string, any>, org
     managedAccounts: [],
     mfaAccounts: [],
     affiliation: "Example Inc.",
-    tag: "staff",
     region: "",
     realName: "",
     isVerified: false,

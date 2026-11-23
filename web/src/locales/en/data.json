@@ -2156,7 +2156,9 @@
     "Your account has been deleted": "Your account has been deleted",
     "Your password must be updated before you can continue to use your account, please click the \"Modify password...\" button below": "Your password must be updated before you can continue to use your account, please click the \"Modify password...\" button below",
     "Zip code": "Zip code",
-    "input password": "input password"
+    "input password": "input password",
+    "Tags": "Tags",
+    "Tags - Tooltip": "Tags of the user, will be fill with organization tags if empty when creating a new user"
   },
   "verification": {
     "Is used": "Is used",

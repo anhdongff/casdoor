@@ -2148,7 +2148,9 @@
     "Your account has been deleted": "Tài khoản đã bị xóa",
     "Your password must be updated before you can continue to use your account, please click the \"Modify password...\" button below": "Bạn cần cập nhật mật khẩu trước khi tiếp tục sử dụng tài khoản, vui lòng nhấn nút \"Đổi mật khẩu...\" bên dưới",
     "Zip code": "Mã bưu điện",
-    "input password": "Nhập mật khẩu"
+    "input password": "Nhập mật khẩu",
+    "Tags": "Thẻ",
+    "Tags - Tooltip": "Các thẻ của người dùng, sẽ được điền bằng các thẻ của tổ chức nếu bị bỏ trống khi tạo người dùng mới"
   },
   "verification": {
     "Is used": "Đã được sử dụng",

@@ -388,7 +388,7 @@ export default function UserEditPage({ self }: { self?: boolean } = {}) {
       </AccountItemRow>
     ),
     "Tag": (
-      <AccountItemRow name="Tag" labelKey="general:Tag">
+      <AccountItemRow name="Tag" labelKey="user:Tags">
         {/* an organization that lists its tags picks from them; the second
               token of "<name>|<zh name>" is the label shown in Chinese */}
         {(userOrganization?.tags?.length ?? 0) > 0 ? (
