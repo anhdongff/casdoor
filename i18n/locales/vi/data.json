@@ -204,7 +204,8 @@
     "Invitation %s does not exist": "Lời mời %s không tồn tại"
   },
   "ldap": {
-    "Ldap server exist": "Máy chủ LDAP tồn tại"
+    "Ldap server exist": "Máy chủ LDAP tồn tại",
+    "Some emails already exist: %s": "Một số email đã tồn tại: %s"
   },
   "link": {
     "Please link first": "Vui lòng kết nối trước tiên",

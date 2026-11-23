@@ -204,7 +204,8 @@
     "Invitation %s does not exist": "Invitation %s does not exist"
   },
   "ldap": {
-    "Ldap server exist": "Ldap server exist"
+    "Ldap server exist": "Ldap server exist",
+    "Some emails already exist: %s": "Some emails already exist: %s"
   },
   "link": {
     "Please link first": "Please link first",

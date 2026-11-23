@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xorm-io/builder"
+
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/casdoor/casdoor/conf"
 	"github.com/casdoor/casdoor/i18n"
@@ -454,8 +456,19 @@ func AutoAdjustLdapUser(users []LdapUser) []LdapUser {
 
 func SyncLdapUsers(owner string, syncUsers []LdapUser, ldapId string, lang string) (existUsers []LdapUser, failedUsers []LdapUser, err error) {
 	var uuids []string
+	var emails []string
 	for _, user := range syncUsers {
 		uuids = append(uuids, user.Uuid)
+		emails = append(emails, user.Email)
+	}
+
+	// check exist users by email
+	emails, err = GetExistEmailsGlobally(emails)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(emails) > 0 {
+		return nil, nil, fmt.Errorf(i18n.Translate(lang, "ldap:Some emails already exist: %s"), strings.Join(emails, ", "))
 	}
 
 	organization, err := getOrganization("admin", owner)
@@ -544,7 +557,7 @@ func SyncLdapUsers(owner string, syncUsers []LdapUser, ldapId string, lang strin
 				return nil, nil, err
 			}
 
-			name, err := syncUser.buildLdapUserName(owner)
+			name, err := syncUser.buildLdapUserName()
 			if err != nil {
 				return nil, nil, err
 			}
@@ -831,6 +844,72 @@ func GetExistUuids(owner string, uuids []string) ([]string, error) {
 	return existUuids, nil
 }
 
+func GetExistEmailsGlobally(emails []string) ([]string, error) {
+	var existEmails []string
+	seen := make(map[string]struct{}, len(emails))
+
+	inputSet := make(map[string]struct{}, len(emails))
+	for _, e := range emails {
+		if e != "" {
+			inputSet[e] = struct{}{}
+		}
+	}
+
+	// PostgreSQL only supports up to 65535 parameters per query, so we batch the emails
+	const batchSize = 100
+	tableNamePrefix := conf.GetConfigString("tableNamePrefix")
+
+	type UserEmails struct {
+		Email          string `xorm:"email"`
+		SecondaryEmail string `xorm:"secondary_email"`
+	}
+
+	addIfMatched := func(addr string) {
+		if addr == "" {
+			return
+		}
+		if _, ok := inputSet[addr]; !ok {
+			return
+		}
+		if _, dup := seen[addr]; dup {
+			return
+		}
+		seen[addr] = struct{}{}
+		existEmails = append(existEmails, addr)
+	}
+
+	for i := 0; i < len(emails); i += batchSize {
+		end := i + batchSize
+		if end > len(emails) {
+			end = len(emails)
+		}
+
+		batch := emails[i:end]
+		if len(batch) == 0 {
+			continue
+		}
+
+		var batchUsers []UserEmails
+		cond := builder.In("email", batch).Or(builder.In("secondary_email", batch))
+
+		err := ormer.Engine.
+			Table(tableNamePrefix+"user").
+			Where(cond).
+			Cols("email", "secondary_email").
+			Find(&batchUsers)
+		if err != nil {
+			return existEmails, err
+		}
+
+		for _, user := range batchUsers {
+			addIfMatched(user.Email)
+			addIfMatched(user.SecondaryEmail)
+		}
+	}
+
+	return existEmails, nil
+}
+
 // CheckLdapPasswordForget rejects the forgot-password flow for LDAP users. That flow ends
 // in ResetLdapPassword() with an empty old password, so the new password has to be written
 // with the bind account configured on the LDAP server, which usually is a read-only account
@@ -942,10 +1021,10 @@ func ResetLdapPassword(user *User, oldPassword string, newPassword string, lang 
 	return nil
 }
 
-func (ldapUser *LdapUser) buildLdapUserName(owner string) (string, error) {
+func (ldapUser *LdapUser) buildLdapUserName() (string, error) {
 	user := User{}
 	uidWithNumber := fmt.Sprintf("%s_%s", ldapUser.Uid, ldapUser.UidNumber)
-	has, err := ormer.Engine.Where("owner = ? and (name = ? or name = ?)", owner, ldapUser.Uid, uidWithNumber).Get(&user)
+	has, err := ormer.Engine.Where("name = ? or name = ?", ldapUser.Uid, uidWithNumber).Get(&user)
 	if err != nil {
 		return "", err
 	}
