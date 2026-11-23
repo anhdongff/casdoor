@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/beego/beego/v2/core/utils/pagination"
@@ -493,7 +494,7 @@ func (c *ApiController) SendVerificationCode() {
 		}
 
 		// check if the email is in the internal mail domains list, if so, use the internal email provider
-		if application.InternalMailDomains != "" && strings.Contains(application.InternalMailDomains, strings.SplitN(vform.Dest, "@", 2)[1]) {
+		if application.InternalMailDomains != "" && slices.Contains(strings.Split(application.InternalMailDomains, ","), strings.SplitN(vform.Dest, "@", 2)[1]) {
 			provider, err = application.GetProviderByCategoryAndRule("Email", "allInternal", "All")
 			if err != nil {
 				c.ResponseError(err.Error())
