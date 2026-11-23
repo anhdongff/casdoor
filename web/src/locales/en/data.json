@@ -1302,7 +1302,9 @@
     "Website URL": "Website URL",
     "Website URL - Tooltip": "The homepage URL of the organization. This field is not used in Casdoor",
     "Widget items": "Widget items",
-    "Widget items - Tooltip": "Items displayed in the widget"
+    "Widget items - Tooltip": "Items displayed in the widget",
+    "Default user properties": "Default user properties",
+    "Default user properties - Tooltip": "Default user properties. New users will be filled with these properties in the `Properties` field if this field is empty"
   },
   "payment": {
     "Confirm your invoice information": "Confirm your invoice information",

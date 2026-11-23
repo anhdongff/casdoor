@@ -1276,6 +1276,11 @@ func AddUser(user *User, lang string) (bool, error) {
 		user.Tag = strings.Join(organization.Tags, ",")
 	}
 
+	// Add the default user properties of the organization to the user if they are not already present
+	if organization.DefaultUserProperties != nil && len(user.Properties) == 0 {
+		user.Properties = organization.DefaultUserProperties
+	}
+
 	affected, err := ormer.Engine.Insert(user)
 	if err != nil {
 		return false, err

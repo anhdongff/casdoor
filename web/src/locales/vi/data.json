@@ -1302,7 +1302,9 @@
     "Website URL": "Địa chỉ trang web",
     "Website URL - Tooltip": "Địa chỉ trang chủ của tổ chức. Trường này không được sử dụng trong Casdoor",
     "Widget items": "Các mục tiện ích",
-    "Widget items - Tooltip": "Gợi ý các mục tiện ích"
+    "Widget items - Tooltip": "Gợi ý các mục tiện ích",
+    "Default user properties": "Thuộc tính người dùng mặc định",
+    "Default user properties - Tooltip": "Các thuộc tính người dùng mặc định. Người dùng được tạo mới sẽ được điền các thuộc tính này vào trường `Đặc tính` của họ nếu trường này bị bỏ trống"
   },
   "payment": {
     "Confirm your invoice information": "Xác nhận thông tin hóa đơn của bạn",
@@ -1679,7 +1681,7 @@
     "UserInfo URL - Tooltip": "Địa chỉ URL của Thông tin người dùng",
     "Web": "Giao diện web",
     "admin (Shared)": "quản trị viên (Chung)",
-    "Provider name rules": "Tên nhà cung cấp phải là duy nhất. Nếu provider có danh mục Thông báo, nếu tên của nó chứa chuỗi 'sso-logout' hoặc 'sso_logout, khi gọi đến /api/sso-logout, nó sẽ được gọi để đăng xuất người dùng khỏi nhà cung cấp này. Nếu provider có danh mục Email, loại Default, nếu tên của nó chứa chuỗi 'disable_tls' hoặc 'disable-tls', khi gửi email, nó sẽ tắt TLS"
+    "Provider name rules": "Tên nhà cung cấp phải là duy nhất. Nếu provider có danh mục Thông báo, nếu tên của nó chứa chuỗi 'sso-logout' hoặc 'sso_logout', khi gọi đến /api/sso-logout, nó sẽ được gọi để đăng xuất người dùng khỏi nhà cung cấp này. Nếu provider có danh mục Email, loại Default, nếu tên của nó chứa chuỗi 'disable_tls' hoặc 'disable-tls', khi gửi email, nó sẽ tắt TLS"
   },
   "radiusClient": {
     "Bound organization": "Tổ chức ràng buộc",

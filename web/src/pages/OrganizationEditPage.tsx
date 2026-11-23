@@ -32,6 +32,7 @@ import * as Setting from "@/lib/setting";
 import {EditionNotice} from "@/components/common/EditionNotice";
 import {SecurityPolicyTab} from "@/components/organization/SecurityPolicyTab";
 import {EnterprisePolicyTab} from "@/components/organization/EnterprisePolicyTab";
+import { MapTable } from "@/components/crud/MapTable";
 
 const PASSWORD_TYPES = ["plain", "salt", "sha512-salt", "md5-salt", "bcrypt", "pbkdf2-salt", "argon2id", "pbkdf2-django", "pbkdf2-sm3"];
 const TOKEN_FORMATS = ["JWT", "JWT-Empty", "JWT-Custom", "JWT-Standard"];
@@ -639,6 +640,15 @@ export default function OrganizationEditPage() {
                 {id: "Horizontal", name: i18next.t("application:Horizontal")},
                 {id: "Vertical", name: i18next.t("application:Vertical")},
               ]}
+            />
+          </FormRow>
+          <FormRow block labelKey="organization:Default user properties">
+            <MapTable
+              value={organization.defaultUserProperties || {}}
+              onChange={(value) => update("defaultUserProperties", value)}
+              keyTitle={i18next.t("general:Name")}
+              valueTitle={i18next.t("webhook:Value")}
+              keyWidth={240}
             />
           </FormRow>
           <FormRow block labelKey="organization:LDAP attributes">
