@@ -492,7 +492,7 @@ func SyncLdapUsers(owner string, syncUsers []LdapUser, ldapId string, lang strin
 			ou = append(ou, admin[3:])
 		}
 	}
-	tag := strings.Join(ou, ".")
+	// tag := strings.Join(ou, ".")
 
 	existUuids, err := GetExistUuids(owner, uuids)
 	if err != nil {
@@ -576,11 +576,11 @@ func SyncLdapUsers(owner string, syncUsers []LdapUser, ldapId string, lang strin
 				Address:           []string{syncUser.Address},
 				Region:            util.ReturnAnyNotEmpty(syncUser.Country, syncUser.CountryName),
 				Affiliation:       affiliation,
-				Tag:               tag,
-				Score:             score,
-				Ldap:              syncUser.Uuid,
-				UidNumber:         parsePosixNumber(syncUser.UidNumber),
-				Properties:        syncUser.Attributes,
+				// Tag:               tag,
+				Score:      score,
+				Ldap:       syncUser.Uuid,
+				UidNumber:  parsePosixNumber(syncUser.UidNumber),
+				Properties: syncUser.Attributes,
 			}
 			formatUserPhone(newUser)
 
